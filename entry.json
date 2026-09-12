@@ -7,5 +7,6 @@
   "href": "index.html",
   "readme": "README.md",
   "launchLabel": "Open MineMiner",
+  "video": "/videos/demo_mineminer.mp4",
   "pitch": "A Minecraft-inspired implementation of Minesweeper extended into 3D."
 }
