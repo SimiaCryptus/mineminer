@@ -1,105 +1,102 @@
-import { fmtTime, esc } from './Hud.js';
-import { LIVES_OPTIONS } from '../core/settings.js';
+import {esc, fmtTime} from './Hud.js';
+import {LIVES_OPTIONS, QUANTUM_LIVES_OPTIONS} from '../core/settings.js';
+
 const WEIGHT_OPTS = [['1', 'Counts as 1'], ['0.5', 'Counts as ½'], ['0', 'Ignored']];
-const QUANTUM_OPTS = [
-   ['off', 'Off · classic guessing'],
-   ['on', 'On · marks and strikes collapse'],
-];
 
 
 function select(name, label, options, value) {
-  const opts = options
-    .map(([v, text]) => `<option value="${v}" ${String(v) === String(value) ? 'selected' : ''}>${text}</option>`)
-    .join('');
-  return `<label class="row"><span>${label}</span><select name="${name}">${opts}</select></label>`;
+    const opts = options
+        .map(([v, text]) => `<option value="${v}" ${String(v) === String(value) ? 'selected' : ''}>${text}</option>`)
+        .join('');
+    return `<label class="row"><span>${label}</span><select name="${name}">${opts}</select></label>`;
 }
 
 function check(name, label, value) {
-  return `<label class="row"><span>${label}</span><input type="checkbox" name="${name}" ${value ? 'checked' : ''}></label>`;
+    return `<label class="row"><span>${label}</span><input type="checkbox" name="${name}" ${value ? 'checked' : ''}></label>`;
 }
 
 function stars(n) {
-  return `<span class="stars">${'★'.repeat(n)}${'☆'.repeat(3 - n)}</span>`;
+    return `<span class="stars">${'★'.repeat(n)}${'☆'.repeat(3 - n)}</span>`;
 }
 
 /** Pause/settings, level select and end-of-run panels. Emits (act, data) via handlers.onAction. */
 export class Overlay {
-  constructor(root, handlers) {
-    this.h = handlers;
-    this.mode = null;
-    this.el = document.createElement('div');
-    this.el.className = 'overlay hidden';
-    this.panel = document.createElement('div');
-    this.panel.className = 'panel';
-    this.el.appendChild(this.panel);
-    root.appendChild(this.el);
+    constructor(root, handlers) {
+        this.h = handlers;
+        this.mode = null;
+        this.el = document.createElement('div');
+        this.el.className = 'overlay hidden';
+        this.panel = document.createElement('div');
+        this.panel.className = 'panel';
+        this.el.appendChild(this.panel);
+        root.appendChild(this.el);
 
-    this.el.addEventListener('click', (e) => {
-      if (e.target === this.el && this.mode !== 'end') this.hide();
-    });
-    this.panel.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-act]');
-      if (!btn) return;
-      const act = btn.dataset.act;
-      const data = { ...btn.dataset };
-      if (act === 'custom') {
-        for (const input of this.panel.querySelectorAll('.custom [name]')) data[input.name] = input.value;
-      }
-      this.h.onAction(act, data);
-    });
-    this.panel.addEventListener('change', (e) => {
-      const form = e.target.closest('form.settings');
-      if (form) this.h.onSettingsChange(this.readSettings(form));
-    });
-    this.panel.addEventListener('input', (e) => {
-      if (e.target.name === 'volume') this.h.onSettingsChange(this.readSettings(e.target.form));
-    });
-  }
+        this.el.addEventListener('click', (e) => {
+            if (e.target === this.el && this.mode !== 'end') this.hide();
+        });
+        this.panel.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-act]');
+            if (!btn) return;
+            const act = btn.dataset.act;
+            const data = {...btn.dataset};
+            if (act === 'custom') {
+                for (const input of this.panel.querySelectorAll('.custom [name]')) data[input.name] = input.value;
+            }
+            this.h.onAction(act, data);
+        });
+        this.panel.addEventListener('change', (e) => {
+            const form = e.target.closest('form.settings');
+            if (form) this.h.onSettingsChange(this.readSettings(form));
+        });
+        this.panel.addEventListener('input', (e) => {
+            if (e.target.name === 'volume') this.h.onSettingsChange(this.readSettings(e.target.form));
+        });
+    }
 
-  isOpen() {
-    return !this.el.classList.contains('hidden');
-  }
+    isOpen() {
+        return !this.el.classList.contains('hidden');
+    }
 
-  open(mode, html) {
-    this.mode = mode;
-    this.panel.innerHTML = html;
-    this.el.classList.remove('hidden');
-  }
+    open(mode, html) {
+        this.mode = mode;
+        this.panel.innerHTML = html;
+        this.el.classList.remove('hidden');
+    }
 
-  hide() {
-    if (!this.isOpen()) return;
-    this.el.classList.add('hidden');
-    this.mode = null;
-    this.h.onClose?.();
-  }
+    hide() {
+        if (!this.isOpen()) return;
+        this.el.classList.add('hidden');
+        this.mode = null;
+        this.h.onClose?.();
+    }
 
-  readSettings(form) {
-    const fd = new FormData(form);
-    return {
-      ...this.current,
-      cascade: fd.get('cascade'),
-       quantum: fd.get('quantum'),
-       edgeWeight: Number(fd.get('edgeWeight')),
-       cornerWeight: Number(fd.get('cornerWeight')),
-      lives: fd.get('lives'),
-      safeFirstStrike: form.safeFirstStrike.checked,
-      strictMarks: form.strictMarks.checked,
-      undo: form.undo.checked,
-       hideSatisfied: form.hideSatisfied.checked,
-      colourblind: form.colourblind.checked,
-      reducedMotion: form.reducedMotion.checked,
-      effects: fd.get('effects'),
-      volume: Number(fd.get('volume')),
-    };
-  }
+    readSettings(form) {
+        const fd = new FormData(form);
+        return {
+            ...this.current,
+            cascade: fd.get('cascade'),
+            quantumLives: fd.get('quantumLives'),
+            edgeWeight: Number(fd.get('edgeWeight')),
+            cornerWeight: Number(fd.get('cornerWeight')),
+            lives: fd.get('lives'),
+            safeFirstStrike: form.safeFirstStrike.checked,
+            strictMarks: form.strictMarks.checked,
+            undo: form.undo.checked,
+            hideSatisfied: form.hideSatisfied.checked,
+            colourblind: form.colourblind.checked,
+            reducedMotion: form.reducedMotion.checked,
+            effects: fd.get('effects'),
+            volume: Number(fd.get('volume')),
+        };
+    }
 
-  showSettings(settings, ctx) {
-    this.current = settings;
-    this.open('settings', `
+    showSettings(settings, ctx) {
+        this.current = settings;
+        this.open('settings', `
       <h2>Paused · Settings</h2>
       <form class="settings">
         ${select('cascade', 'Cascade', [['on', 'On'], ['off', 'Off'], ['single-layer', 'Single layer']], settings.cascade)}
-         ${select('quantum', 'Quantum grace', QUANTUM_OPTS, settings.quantum)}
+         ${select('quantumLives', 'Quantum lives (Ψ)', QUANTUM_LIVES_OPTIONS, settings.quantumLives)}
          ${select('edgeWeight', 'Edge neighbours (12)', WEIGHT_OPTS, settings.edgeWeight)}
          ${select('cornerWeight', 'Corner neighbours (8)', WEIGHT_OPTS, settings.cornerWeight)}
          ${select('lives', 'Lives (mistakes allowed)', LIVES_OPTIONS, settings.lives)}
@@ -124,7 +121,7 @@ export class Overlay {
        <p class="sub" style="margin-top:14px">
          The 6 face-touching neighbours always count as 1. Edge- and corner-touching neighbours
          can count as 1, ½ or nothing — half-weights show up as numbers like <code>3½</code>.
-         Changing them (or lives) restarts the current board.
+         Changing them (or either kind of lives) restarts the current board.
        </p>
         <p class="sub">
           Lives are mistakes you survive: each misfire or detonation costs one, and the run ends at
@@ -139,25 +136,31 @@ export class Overlay {
            world where it is <em>safe</em>. Provable mines still detonate, provably safe marks still
             misfire. A blind dig in the dark is repaired too, by swapping the mine with a block no
             number has seen yet — it only detonates once every remaining dark block is a mine.
-            Every collapse that rewrites the vault is counted.
+         </p>
+         <p class="sub">
+           <b>Quantum lives</b> are your budget of collapses. Each quantum flag or graced strike
+           spends one, and they are spent <em>before</em> your classical lives: once they hit zero
+           the vault turns classical again and an ambiguous mine detonates for real. <code>0</code>
+           is plain Minesweeper; <code>∞</code> means you never have to guess. A flawless run spends
+           none of them.
          </p>
     `);
-  }
+    }
 
-  showMenu(levels, progress, currentIndex) {
-    const rows = levels
-      .map((l, i) => {
-        const p = progress[l.id];
-        return `
+    showMenu(levels, progress, currentIndex) {
+        const rows = levels
+            .map((l, i) => {
+                const p = progress[l.id];
+                return `
           <button class="level ${currentIndex === i ? 'current' : ''}" data-act="level" data-index="${i}">
             <span class="num">${i + 1}</span>
             <span class="name">${esc(l.name)}<small>${l.w}×${l.d}×${l.h} · ${l.mines} mines · par ${fmtTime(l.par * 1000)}</small></span>
             ${stars(p?.stars || 0)}
             <span class="best">${p?.best != null ? fmtTime(p.best) : '—'}</span>
           </button>`;
-      })
-      .join('');
-    this.open('menu', `
+            })
+            .join('');
+        this.open('menu', `
       <h1>MineMiner</h1>
       <p class="sub">Break every safe block. Mark every mineblock. Don't strike an unmarked one.</p>
       <div class="levels">${rows}</div>
@@ -177,12 +180,18 @@ export class Overlay {
         </div>
       </div>
     `);
-  }
+    }
 
-  showEnd(stats) {
-    const cls = stats.won ? 'won' : 'lost';
-     const livesLeft = stats.lives === Infinity ? '∞' : stats.lives != null ? String(Math.max(0, stats.lives)) : null;
-    this.open('end', `
+    showEnd(stats) {
+        const cls = stats.won ? 'won' : 'lost';
+        const livesLeft = stats.lives === Infinity ? '∞' : stats.lives != null ? String(Math.max(0, stats.lives)) : null;
+        const qLeft =
+            stats.quantumLives === Infinity
+                ? '∞'
+                : stats.quantumLives != null
+                    ? String(Math.max(0, stats.quantumLives))
+                    : null;
+        this.open('end', `
       <div class="end ${cls}">
         <h2>${stats.won ? 'Vault cleared!' : 'Detonation'}</h2>
         ${stats.won ? `<div class="stars big">${'★'.repeat(stats.stars)}${'☆'.repeat(3 - stats.stars)}</div>` : ''}
@@ -190,7 +199,7 @@ export class Overlay {
           <dt>Time</dt><dd>${fmtTime(stats.timeMs)}${stats.par ? ` <span class="sub">(par ${fmtTime(stats.par * 1000)})</span>` : ''}</dd>
           <dt>Misfires</dt><dd>${stats.misfires}</dd>
           <dt>Detonations</dt><dd>${stats.detonations}</dd>
-           <dt>Collapses</dt><dd>Ψ ${stats.collapses ?? 0}</dd>
+           <dt>Collapses</dt><dd>Ψ ${stats.collapses ?? 0}${qLeft !== null ? ` <span class="sub">(${qLeft} left)</span>` : ''}</dd>
            ${livesLeft !== null ? `<dt>Lives left</dt><dd>${livesLeft}</dd>` : ''}
           <dt>Largest cascade</dt><dd>${stats.largestCascade} blocks</dd>
           <dt>Seed</dt><dd><code>${esc(stats.seed)}</code></dd>
@@ -204,5 +213,5 @@ export class Overlay {
         </div>
       </div>
     `);
-  }
+    }
 }

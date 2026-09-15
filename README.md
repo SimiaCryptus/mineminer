@@ -51,11 +51,13 @@ safety net; commit wrongly too often and it costs you.
   actual chain reaction tunnelling through the rock, shell by shell, with sound and dust — a
   small, satisfying payoff for good deduction.
 - **No coin flips.** When the numbers genuinely can't tell you whether a block is a mine, your
-   action *decides*: mark it and the vault collapses into a valid world where that block is the
-   mine; strike it and the vault collapses into a valid world where it is safe ("quantum grace").
-    Anything the numbers prove stays exactly as proven; blind digging is covered too, as long as
-    some block no number has seen yet can take the mine instead. Every collapse is counted — so a
-    flawless, fully deduced clear is still the thing to aim for.
+  action *decides*: mark it and the vault collapses into a valid world where that block is the
+  mine; strike it and the vault collapses into a valid world where it is safe ("quantum grace").
+  Anything the numbers prove stays exactly as proven; blind digging is covered too, as long as
+  some block no number has seen yet can take the mine instead. How much of this you get is up to
+  you: *quantum lives* are a budget of collapses (0 … ∞) that is spent before your ordinary lives,
+  so you can play with a safety net, with exactly two miracles, or with none at all. Every collapse
+  is counted — a flawless, fully deduced clear is still the thing to aim for.
 
 ## Who might enjoy this
 
