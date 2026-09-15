@@ -18,6 +18,8 @@
 .hud-stack { display: flex; flex-direction: column; gap: 2px; }
 .timer { font-size: 1.3em; font-weight: 600; font-variant-numeric: tabular-nums; }
 .lives { color: var(--accent); letter-spacing: 0.1em; }
+.collapses { color: #b57bff; font-size: 0.85em; letter-spacing: 0.05em; font-variant-numeric: tabular-nums; }
+.collapses:empty { display: none; }
 .level-name { color: var(--muted); font-size: 0.85em; }
 .level-name code { color: var(--accent2); }
 

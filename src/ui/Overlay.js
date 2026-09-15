@@ -1,6 +1,10 @@
 import { fmtTime, esc } from './Hud.js';
 import { LIVES_OPTIONS } from '../core/settings.js';
 const WEIGHT_OPTS = [['1', 'Counts as 1'], ['0.5', 'Counts as ½'], ['0', 'Ignored']];
+const QUANTUM_OPTS = [
+   ['off', 'Off · classic guessing'],
+   ['on', 'On · marks and strikes collapse'],
+];
 
 
 function select(name, label, options, value) {
@@ -74,6 +78,7 @@ export class Overlay {
     return {
       ...this.current,
       cascade: fd.get('cascade'),
+       quantum: fd.get('quantum'),
        edgeWeight: Number(fd.get('edgeWeight')),
        cornerWeight: Number(fd.get('cornerWeight')),
       lives: fd.get('lives'),
@@ -94,6 +99,7 @@ export class Overlay {
       <h2>Paused · Settings</h2>
       <form class="settings">
         ${select('cascade', 'Cascade', [['on', 'On'], ['off', 'Off'], ['single-layer', 'Single layer']], settings.cascade)}
+         ${select('quantum', 'Quantum grace', QUANTUM_OPTS, settings.quantum)}
          ${select('edgeWeight', 'Edge neighbours (12)', WEIGHT_OPTS, settings.edgeWeight)}
          ${select('cornerWeight', 'Corner neighbours (8)', WEIGHT_OPTS, settings.cornerWeight)}
          ${select('lives', 'Lives (mistakes allowed)', LIVES_OPTIONS, settings.lives)}
@@ -122,10 +128,19 @@ export class Overlay {
        </p>
         <p class="sub">
           Lives are mistakes you survive: each misfire or detonation costs one, and the run ends at
-          zero. A flawless run (no misfires, no detonations) still earns the extra star.
+           zero. A flawless run (no misfires, no detonations, no collapses) still earns the extra star.
           “Hide solved numbers” fades out a number once every block around it is cleared or marked
           and the marks add up — it has nothing left to tell you.
         </p>
+         <p class="sub">
+           <b>Quantum grace</b> removes coin flips. When you mark a block next to revealed numbers
+           whose content those numbers do <em>not</em> prove, the vault collapses into a valid world
+           where it <em>is</em> a mine (Ψ). Striking such a block collapses the vault into a valid
+           world where it is <em>safe</em>. Provable mines still detonate, provably safe marks still
+            misfire. A blind dig in the dark is repaired too, by swapping the mine with a block no
+            number has seen yet — it only detonates once every remaining dark block is a mine.
+            Every collapse that rewrites the vault is counted.
+         </p>
     `);
   }
 
@@ -175,6 +190,7 @@ export class Overlay {
           <dt>Time</dt><dd>${fmtTime(stats.timeMs)}${stats.par ? ` <span class="sub">(par ${fmtTime(stats.par * 1000)})</span>` : ''}</dd>
           <dt>Misfires</dt><dd>${stats.misfires}</dd>
           <dt>Detonations</dt><dd>${stats.detonations}</dd>
+           <dt>Collapses</dt><dd>Ψ ${stats.collapses ?? 0}</dd>
            ${livesLeft !== null ? `<dt>Lives left</dt><dd>${livesLeft}</dd>` : ''}
           <dt>Largest cascade</dt><dd>${stats.largestCascade} blocks</dd>
           <dt>Seed</dt><dd><code>${esc(stats.seed)}</code></dd>

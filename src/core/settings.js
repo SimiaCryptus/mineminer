@@ -1,5 +1,5 @@
 const KEY = 'mineminer.settings';
-const VERSION = 3;
+const VERSION = 5;
 
 /** value -> label. A "life" is a mistake (misfire or detonation) you survive. */
 export const LIVES_OPTIONS = [
@@ -22,6 +22,10 @@ export const DEFAULT_SETTINGS = Object.freeze({
   safeFirstStrike: true,
   strictMarks: true,
   undo: true,
+   // Quantum grace (quantum_grace.md): 'off' | 'on'.
+   //   on: marking an ambiguous frontier block crystallises a mine there (quantum flag),
+   //       and striking an ambiguous frontier block is repaired to be safe (strike grace).
+   quantum: 'on',
    // Numbers whose neighbourhood is fully resolved stop being drawn.
    hideSatisfied: true,
   effects: 'med', // 'low' | 'med' | 'high'

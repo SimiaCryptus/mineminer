@@ -146,6 +146,7 @@ export class App {
         strictMarks: s.strictMarks,
         lives: livesFromSetting(s.lives),
         safeFirstStrike: s.safeFirstStrike,
+         quantum: s.quantum,
         seed,
       },
       this.bus,
@@ -317,6 +318,10 @@ export class App {
         if (!r.lost) this.hud.flash(`Detonation! ${this.board.lives} ${this.board.lives === 1 ? 'life' : 'lives'} left.`);
         break;
     }
+     if (r.collapse) {
+       this.sfx.collapse();
+       this.hud.flash('Ψ Superposition collapsed — the vault took your branch');
+     }
     this.updateHud();
     if (r.lost) this.onLost();
     else if (r.won) this.onWon(maxDelay);
@@ -408,6 +413,7 @@ export class App {
     this.hud.setMines(this.board.minesRemaining);
     this.hud.setLives(this.board.lives);
     this.hud.setProgress(this.board.progress);
+     this.hud.setCollapses(this.board.collapses, this.settings.quantum !== 'off');
   }
 
   // ------------------------------------------------------------- view modes
@@ -518,6 +524,8 @@ export class App {
       this.board.opts.cascade = next.cascade;
       this.board.opts.strictMarks = next.strictMarks;
       this.board.opts.safeFirstStrike = next.safeFirstStrike;
+       this.board.opts.quantum = next.quantum;
+       this.updateHud();
     }
     if (prev.colourblind !== next.colourblind && this.grid) {
       this.flushReveals();

@@ -1,5 +1,6 @@
 import { EMPTY, MINE, INTACT, MARKED, MINED, SCAR, NEIGHBOUR_STRIDE } from './Grid.js';
 import { relocateMinesAwayFrom } from './MineGenerator.js';
+import { classify, findWorld, applyWorld, applyDeep, DEFAULT_NODE_BUDGET } from './Solver.js';
 import { rngFromSeed } from '../core/rng.js';
 
 export const DEFAULT_BOARD_OPTS = Object.freeze({
@@ -9,6 +10,15 @@ export const DEFAULT_BOARD_OPTS = Object.freeze({
   safeFirstStrike: true,
   shellMs: 22, // reveal delay per cascade shell
   seed: 'mineminer',
+  // Quantum grace (quantum_grace.md): 'off' | 'on'
+  //   on: marking an ambiguous frontier cell crystallises a mine there (quantum flag), and
+  //       striking an ambiguous frontier cell is repaired to be safe (strike grace). If the
+  //       visible numbers can be consistent with the player's action, the world is rewritten
+   //       so that they are. Blocks in the dark (nothing revealed nearby) are covered too:
+   //       a blind strike on a mine swaps it with an unobserved empty block, and a blind mark
+   //       pulls a mine under the flag. Legacy values 'marks' / 'full' are both treated as 'on'.
+  quantum: 'on',
+  quantumBudget: DEFAULT_NODE_BUDGET,
 });
 
 export function countMines(grid) {
@@ -20,12 +30,14 @@ export function countMines(grid) {
 /**
  * Rules engine. Deterministic given (grid, opts, action list).
  * Emits on the optional bus: board:started, board:action, cascade, mine:defused,
- * misfire, mine:detonated, board:won, board:lost, board:restored.
+ * misfire, mine:detonated, quantum:collapse, board:won, board:lost, board:restored.
  */
 export class Board {
   constructor(grid, opts = {}, bus = null) {
     this.grid = grid;
     this.opts = { ...DEFAULT_BOARD_OPTS, ...opts };
+    // Older callers / saved settings used 'marks' or 'full'; grace now always covers both.
+    if (this.opts.quantum && this.opts.quantum !== 'off') this.opts.quantum = 'on';
     this.bus = bus;
     this.rng = rngFromSeed(`${this.opts.seed}:relocate`);
     this.mineCount = countMines(grid);
@@ -39,6 +51,10 @@ export class Board {
     this.misfires = 0;
     this.minedSafe = 0;
     this.largestCascade = 0;
+    this.collapses = 0;
+    // Cells whose content the player has crystallised through a collapse. They are
+    // constants for every later frontier search, so a declared branch is never undone.
+    this.pinned = new Uint8Array(grid.cellCount);
     this.actionLog = [];
   }
 
@@ -53,6 +69,10 @@ export class Board {
   get progress() {
     return this.safeTotal ? this.minedSafe / this.safeTotal : 1;
   }
+  /** Quantum grace applies to both marks and strikes whenever it is not switched off. */
+  get quantumOn() {
+    return Boolean(this.opts.quantum) && this.opts.quantum !== 'off';
+  }
 
   isWon() {
     return this.status !== 'lost' && this.minedSafe >= this.safeTotal;
@@ -63,7 +83,19 @@ export class Board {
   }
 
   result(kind, cell) {
-    return { kind, cell, revealed: [], defused: [], changed: [], scar: -1, lives: this.lives, won: false, lost: false, reason: null };
+    return {
+      kind,
+      cell,
+      revealed: [],
+      defused: [],
+      changed: [],
+      scar: -1,
+      lives: this.lives,
+      won: false,
+      lost: false,
+      collapse: false,
+      reason: null,
+    };
   }
 
   validCell(cell) {
@@ -73,7 +105,18 @@ export class Board {
   beginIfNeeded(cell) {
     if (this.started) return;
     this.started = true;
-    if (this.opts.safeFirstStrike) relocateMinesAwayFrom(this.grid, cell, this.rng);
+     if (this.opts.safeFirstStrike) {
+       const { state } = this.grid;
+       // Flags and pinned blocks are constants: the relocation must neither pull a mine
+       // out from under them nor drop one onto them. Otherwise a flag planted before
+       // the first strike lies, and "that 1 is my flag, so its other neighbour is
+       // safe" walks the player straight into the mine the relocation parked there.
+       // The struck block is the one exception: if the player un-flagged a crystallised
+       // mine and then opens the board on it, forgetting that pin beats dying on move
+       // one. A still-flagged block is handled by the mark branch (defuse / misfire).
+       if (state[cell] !== MARKED) this.pinned[cell] = 0;
+       relocateMinesAwayFrom(this.grid, cell, this.rng, (i) => state[i] === MARKED || this.pinned[i] === 1);
+     }
     this.status = 'playing';
     this.emit('board:started', { cell });
   }
@@ -105,11 +148,16 @@ export class Board {
         this.emit('misfire', { cell });
         this.loseLife(r);
       }
-    } else if (content[cell] === MINE) {
-      this.detonate(cell, r);
     } else {
-      r.kind = 'cleared';
-      this.clear(cell, r);
+      // Strike grace: if the visible numbers can be consistent with this cell being safe,
+      // the hidden world is repaired so that it is, before we look at its content.
+      if (this.quantumOn) r.collapse = this.collapse(cell, 0);
+      if (content[cell] === MINE) {
+        this.detonate(cell, r);
+      } else {
+        r.kind = 'cleared';
+        this.clear(cell, r);
+      }
     }
     this.finish(r);
     return r;
@@ -126,6 +174,8 @@ export class Board {
         r.reason = 'mark-limit';
         return r;
       }
+      // Quantum flag: committing to an ambiguous frontier cell makes it a mine.
+      if (this.quantumOn) r.collapse = this.collapse(cell, 1);
       state[cell] = MARKED;
       this.marks++;
       r.kind = 'marked';
@@ -151,13 +201,13 @@ export class Board {
     }
     let marked = 0;
     const targets = [];
-     // Marks are summed with the same weights the number was built from, so a chord
-     // on a "3½" needs marks whose weights add up to 3.5.
-     this.grid.forEachNeighbour(cell, (n, w) => {
-       if (state[n] === MARKED) marked += w;
-       else if (state[n] === INTACT) targets.push(n);
-     });
-     if (Math.abs(marked - counts[cell]) > 1e-6) {
+    // Marks are summed with the same weights the number was built from, so a chord
+    // on a "3½" needs marks whose weights add up to 3.5.
+    this.grid.forEachNeighbour(cell, (n, w) => {
+      if (state[n] === MARKED) marked += w;
+      else if (state[n] === INTACT) targets.push(n);
+    });
+    if (Math.abs(marked - counts[cell]) > 1e-6) {
       r.reason = 'marks-mismatch';
       return r;
     }
@@ -172,6 +222,7 @@ export class Board {
       r.revealed.push(...sub.revealed);
       r.defused.push(...sub.defused);
       r.changed.push(...sub.changed);
+      r.collapse = r.collapse || sub.collapse;
       if (sub.kind === 'boom') {
         r.kind = 'boom';
         r.scar = sub.scar;
@@ -191,6 +242,58 @@ export class Board {
 
   replay(log) {
     for (const a of log) this.applyAction(a);
+  }
+
+  // ----------------------------------------------------------- quantum grace
+
+  /**
+   * The Quantum Flag / lazy repair operator from quantum_grace.md.
+   *
+   * `cell` must be INTACT; `want` is the branch the player is asserting (1 = mine, 0 = safe).
+   * If the visible numbers *force* the cell's content nothing happens: a provable mine still
+   * detonates and a provably safe mark still misfires, so every deduction stays true. If the
+   * cell is in superposition (worlds of both kinds exist) the hidden world is rewritten to a
+   * valid one where the cell has content `want`, the global mine count is conserved through
+   * unobserved cells, and the cell is pinned so later collapses respect this choice.
+   *
+    * Cells with nothing revealed nearby (the dark) are in superposition too: they are
+    * repaired by swapping contents with another unobserved cell, which changes no visible
+    * number. Only when every other dark cell already agrees with the hidden content is the
+    * cell forced (a blind strike then detonates exactly like classical Minesweeper).
+    *
+    * Returns true when a collapse happened. On the frontier that is whenever the cell was
+    * ambiguous (the numbers were there to read, so committing without a proof is a
+    * collapse whether or not the world had to change). In the dark there was nothing to
+    * read, so a lucky blind dig is not a collapse: only an actual rewrite counts.
+   */
+  collapse(cell, want) {
+     const { verdict, comp, deep, alt } = classify(this.grid, cell, {
+       pinned: this.pinned,
+       budget: this.opts.quantumBudget,
+     });
+    if (verdict !== 'ambiguous') return false;
+    const have = this.grid.content[cell] === MINE ? 1 : 0;
+    let changed = 0;
+     if (comp) {
+       if (want !== have) {
+         // `alt` already has the wanted content; prefer a randomised branch for variety.
+         const world = findWorld(comp, 0, want, this.rng, this.opts.quantumBudget) ?? alt;
+         changed = applyWorld(this.grid, comp, world, this.rng).length;
+       }
+     } else {
+       if (want === have) return false;
+       changed = applyDeep(this.grid, deep, want, this.rng).length;
+    }
+    this.pinned[cell] = 1;
+    this.collapses++;
+     this.emit('quantum:collapse', {
+       cell,
+       want,
+       changed,
+       deep: !comp,
+       component: comp ? comp.vars.length : 0,
+     });
+    return true;
   }
 
   // ----------------------------------------------------------- internals
@@ -282,6 +385,8 @@ export class Board {
       content: this.grid.content.slice(),
       state: this.grid.state.slice(),
       counts: this.grid.counts.slice(),
+      pinned: this.pinned.slice(),
+      rng: this.rng.state,
       status: this.status,
       started: this.started,
       lives: this.lives,
@@ -291,6 +396,7 @@ export class Board {
       misfires: this.misfires,
       minedSafe: this.minedSafe,
       largestCascade: this.largestCascade,
+      collapses: this.collapses,
       actionLog: this.actionLog.slice(),
     };
   }
@@ -299,6 +405,9 @@ export class Board {
     this.grid.content.set(s.content);
     this.grid.state.set(s.state);
     this.grid.counts.set(s.counts);
+    if (s.pinned) this.pinned.set(s.pinned);
+    else this.pinned.fill(0);
+    if (s.rng !== undefined) this.rng.state = s.rng;
     this.status = s.status;
     this.started = s.started;
     this.lives = s.lives;
@@ -308,6 +417,7 @@ export class Board {
     this.misfires = s.misfires;
     this.minedSafe = s.minedSafe;
     this.largestCascade = s.largestCascade;
+    this.collapses = s.collapses ?? 0;
     this.actionLog = s.actionLog.slice();
     this.emit('board:restored', { board: this });
   }

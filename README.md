@@ -50,6 +50,12 @@ safety net; commit wrongly too often and it costs you.
   little flood-fill animation. In three dimensions, that same cascade ripples outward as an
   actual chain reaction tunnelling through the rock, shell by shell, with sound and dust — a
   small, satisfying payoff for good deduction.
+- **No coin flips.** When the numbers genuinely can't tell you whether a block is a mine, your
+   action *decides*: mark it and the vault collapses into a valid world where that block is the
+   mine; strike it and the vault collapses into a valid world where it is safe ("quantum grace").
+    Anything the numbers prove stays exactly as proven; blind digging is covered too, as long as
+    some block no number has seen yet can take the mine instead. Every collapse is counted — so a
+    flawless, fully deduced clear is still the thing to aim for.
 
 ## Who might enjoy this
 

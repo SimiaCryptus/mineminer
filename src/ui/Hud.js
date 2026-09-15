@@ -22,6 +22,7 @@ export class Hud {
         <div class="hud-stack">
           <div class="timer">00:00.0</div>
           <div class="lives"></div>
+           <div class="collapses" title="Quantum collapses this run (Ψ)"></div>
           <div class="level-name"></div>
         </div>
       </div>
@@ -44,6 +45,7 @@ export class Hud {
     this.ringEl = q('.mines-ring');
     this.timerEl = q('.timer');
     this.livesEl = q('.lives');
+     this.collapsesEl = q('.collapses');
     this.levelEl = q('.level-name');
     this.layersEl = q('.layers');
     this.camBtn = q('.cam');
@@ -77,6 +79,10 @@ export class Hud {
   setLives(n) {
     this.livesEl.textContent = n === Infinity ? '⛏ ∞' : '⛏'.repeat(Math.max(0, n));
   }
+   /** Decoherence counter: how many ambiguous cells the player has collapsed. */
+   setCollapses(n, show = true) {
+     this.collapsesEl.textContent = show || n > 0 ? `Ψ ${n}` : '';
+   }
 
   setTime(ms) {
     const text = fmtTime(ms);

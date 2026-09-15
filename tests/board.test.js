@@ -81,7 +81,8 @@ test('striking an unmarked mine detonates and ends the run on 1 life', () => {
   const grid = new Grid(3, 1, 1);
   grid.content[1] = MINE;
   grid.recomputeCounts();
-  const board = new Board(grid, { safeFirstStrike: false });
+   // Classical rules: with quantum grace on, a blind strike would be repaired instead.
+   const board = new Board(grid, { safeFirstStrike: false, quantum: 'off' });
   const r = board.strike(1);
   assert.equal(r.kind, 'boom');
   assert.equal(board.status, 'lost');

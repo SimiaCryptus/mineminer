@@ -166,6 +166,26 @@ marked mines auto-defuse in a satisfying cascade of pops, timer freezes, score p
 * `Settings → Safe first strike` (default ON): the first struck cell and all its neighbours are guaranteed mine-free
   (mines are re-rolled after the first click, §5.2), so no run ever dies on move one, and the first move always produces
   a cascade.
+### 3.7 Quantum grace (see `quantum_grace.md`)
+Classic Minesweeper eventually forces a coin flip. MineMiner treats the hidden mine layout as one *working
+world* among all layouts consistent with the numbers you can see, and lets your commitments choose between them:
+* **Quantum flag** — marking an `INTACT` block on the *frontier* (next to at least one revealed number) whose content
+   the visible numbers do **not** force rewrites the hidden world to a valid one in which that block **is** a mine.
+   The global mine count is conserved by moving a mine to/from a cell nobody has observed yet. The block is then
+   *pinned*: later collapses treat it as a constant, so a declared branch is never undone.
+* **Strike grace** — striking such a block never detonates: if the visible numbers can be consistent with the block
+   being safe, the world is repaired so that it is. A block the numbers *prove* to be a mine still detonates.
+   Marks and strikes are two halves of the same mechanic; `Settings → Quantum grace` is simply `on` / `off`.
+* Provable cells are never rewritten, so every deduction stays true. Blocks with nothing revealed nearby (the
+    *dark*) are in superposition as well: a blind strike on a mine swaps it with an unobserved empty block, and a
+    blind mark pulls a mine under the flag — neither changes a visible number. A blind strike only detonates once
+    every other dark block is a mine. A lucky blind dig that needed no rewrite is not counted as a collapse.
+* Each collapse is counted (`Ψ` on the HUD, in the end panel). A flawless run (no misfire, detonation **or** collapse)
+   earns the second star, so deduction is still rewarded over "choose your reality".
+* Implementation: `game/Solver.js` extracts the connected frontier component around the target, runs a budgeted
+   backtracking search for a world with the wanted content (weighted constraints, 0/½/1), and projects it onto the
+    grid. Dark cells need no search: a single swap with another dark cell is always a valid world. Frontier
+    searches that exceed the node budget fall back to classical behaviour.
 
 ---
 
@@ -247,7 +267,9 @@ counting is `c += slotWeights[k]` instead of `c++`.
 2. Fisher–Yates shuffle of all cell indices; take the first `mineCount`.
 3. **Safe first strike**: on the player's first strike at cell `c`, if `c` or any of its 26 neighbours holds a mine,
    relocate those mines to random cells outside the protected set (guaranteed possible while
-   `mineCount + 27 <= cellCount`), then recompute counts.
+    `mineCount + 27 <= cellCount`), then recompute counts. **Marked and pinned cells are constants** for this step:
+    a mine is never pulled out from under a flag (a quantum flag planted before the opening keeps its mine, and the
+    number next to it counts it) and never dropped onto a block the player has been told is empty.
 4. Recompute `counts` in one pass over the neighbour table.
 
 ### 5.3 Optional: solvability guarantee

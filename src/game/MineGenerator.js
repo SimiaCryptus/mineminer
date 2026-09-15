@@ -31,17 +31,24 @@ export function protectedSet(grid, cell) {
 
 /**
  * Safe first strike: move every mine inside `cell`'s neighbourhood to a random
- * cell outside it. Returns the number of mines moved.
+  * cell outside it. Returns the number of mines moved.
+  *
+  * `locked(i)` marks cells the relocation must not touch, as source or destination:
+  * flagged blocks are the player's commitments and pinned blocks are crystallised
+  * worlds (quantum grace). Pulling a mine out from under a flag – or dropping one onto
+  * a block the player has been told is empty – would make every deduction built on
+  * that block silently false.
  */
-export function relocateMinesAwayFrom(grid, cell, rng) {
+export function relocateMinesAwayFrom(grid, cell, rng, locked = null) {
   const prot = protectedSet(grid, cell);
+   const isLocked = (i) => (locked ? Boolean(locked(i)) : false);
   const toMove = [];
-  for (const c of prot) if (grid.content[c] === MINE) toMove.push(c);
+   for (const c of prot) if (grid.content[c] === MINE && !isLocked(c)) toMove.push(c);
   if (!toMove.length) return 0;
 
   const free = [];
   for (let i = 0; i < grid.cellCount; i++) {
-    if (!prot.has(i) && grid.content[i] === EMPTY) free.push(i);
+     if (!prot.has(i) && grid.content[i] === EMPTY && !isLocked(i)) free.push(i);
   }
   shuffle(free, rng);
   const moves = Math.min(toMove.length, free.length);

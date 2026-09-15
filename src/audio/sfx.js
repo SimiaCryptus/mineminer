@@ -92,6 +92,11 @@ export class Sfx {
     this.tone(160, 0.3, { type: 'sawtooth', gain: 0.18, slide: 0.4 });
     this.noise(0.25, { freq: 250, gain: 0.3 });
   }
+   /** Quantum collapse: a rising, detuned shimmer — distinct from every other cue. */
+   collapse() {
+     [440, 554, 659, 880].forEach((f, i) => this.tone(f, 0.5, { type: 'sine', gain: 0.07, when: i * 0.03, slide: 1.5 }));
+     this.noise(0.4, { freq: 6000, q: 3, gain: 0.05 });
+   }
 
   boom() {
     this.noise(0.9, { freq: 180, q: 0.4, gain: 0.9, type: 'lowpass' });

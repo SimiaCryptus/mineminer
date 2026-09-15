@@ -10,6 +10,7 @@ export class GameState {
     this.misfires = 0;
     this.detonations = 0;
     this.largestCascade = 0;
+     this.collapses = 0;
     this.won = false;
     this.lost = false;
     this.unsubs = [
@@ -25,6 +26,7 @@ export class GameState {
           this.detonations++;
           this.penaltyMs += boomPenalty * 1000;
         }
+         if (r.collapse) this.collapses++;
         if (r.revealed.length > this.largestCascade) this.largestCascade = r.revealed.length;
       }),
       bus.on('board:won', () => this.end(true)),
@@ -59,7 +61,8 @@ export class GameState {
   stars() {
     if (!this.won) return 0;
     let s = 1;
-    if (this.misfires === 0 && this.detonations === 0) s++;
+     // Flawless: no mistakes and no quantum collapses (every commitment was deducible).
+     if (this.misfires === 0 && this.detonations === 0 && this.collapses === 0) s++;
     if (this.level?.par && this.elapsedMs() <= this.level.par * 1000) s++;
     return s;
   }
@@ -72,6 +75,7 @@ export class GameState {
       misfires: this.misfires,
       detonations: this.detonations,
       largestCascade: this.largestCascade,
+       collapses: this.collapses,
       stars: this.stars(),
       par: this.level?.par ?? null,
     };
