@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {LayeredInstances} from './LayeredInstances.js';
+   import {cellGeometry} from './shapes.js';
 
 /**
  * Mostly-transparent additive cubes left behind in mined cells. Colour intensity
@@ -8,7 +9,7 @@ import {LayeredInstances} from './LayeredInstances.js';
  */
 export class GhostRenderer {
     constructor(scene, grid) {
-        this.geometry = new THREE.BoxGeometry(0.86, 0.86, 0.86);
+           this.geometry = cellGeometry(grid.tess, 0.86);
         const material = new THREE.MeshBasicMaterial({
             color: 0xffffff,
             transparent: true,

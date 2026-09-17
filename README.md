@@ -12,10 +12,16 @@ number simply appearing, the block shatters, dust flies, and a glowing transluce
 left hovering in the empty space where the block used to be — a permanent ghost you can read
 from any angle as you orbit or walk through the vault you've carved out.
 
-The board can be one layer deep (which plays exactly like traditional Minesweeper), or two or
-three layers stacked on top of each other. In the deeper vaults, a single number can be
-warning you about mines above you, below you, or diagonally through the block corner — up to
-26 neighbouring cells instead of the familiar 8. Reading those numbers well is the whole game.
+   The board can be one layer deep (which plays exactly like traditional Minesweeper), or many
+   layers stacked on top of each other — the default vault is an 8×8×8 cube with 30 mines. In the
+   deeper vaults, a single number can be warning you about mines above you, below you, or
+   diagonally through the block corner — up to 26 neighbouring cells instead of the familiar 8.
+   Reading those numbers well is the whole game.
+
+   The blocks need not even be cubes. The vault can be tiled with hexagonal prisms, rhombic
+   dodecahedra or truncated octahedra instead — space-filling shapes with 20, 18 or 14
+   neighbours and their own mix of face-, edge- and corner-touching cells. Every shape, size and
+   mine count is set from the settings panel; there is no fixed level list.
 
 ## The idea in brief
 
@@ -38,6 +44,10 @@ safety net; commit wrongly too often and it costs you.
   play — but the third dimension changes the texture of the puzzle completely. Numbers become
   denser, ambiguous, and genuinely difficult to parse at first, then click into place once
   you learn to think in shells and layers instead of rows and columns.
+   - **Familiar rules, new tilings.** Swap the cubes for hexagonal prisms, rhombic dodecahedra
+     or truncated octahedra and the same numbers describe a different neighbourhood: fewer
+     cells, differently arranged, some touching only along an edge or at a single vertex — and
+     you decide how much those count for (1, ½ or nothing).
 - **The board remembers itself.** Every number you've ever uncovered stays visible as a soft
   glowing marker. You're not solving a puzzle that vanishes as you go — you're excavating a
   structure that keeps a visual record of your reasoning, layer by layer.

@@ -1,5 +1,5 @@
 const KEY = 'mineminer.settings';
-const VERSION = 6;
+const VERSION = 7;
 
 /** value -> label. A "life" is a mistake (misfire or detonation) you survive. */
 export const LIVES_OPTIONS = [
@@ -25,11 +25,17 @@ export const QUANTUM_LIVES_OPTIONS = [
 
 export const DEFAULT_SETTINGS = Object.freeze({
     version: VERSION,
+    // The vault: cell shape and size. Dug on demand from the settings panel.
+    tessellation: 'cubic', // 'cubic' | 'hex' | 'fcc' | 'bcc' (see game/Tessellation.js)
+    boardW: 8,
+    boardD: 8,
+    boardH: 8,
+    boardMines: 30,
     cascade: 'on', // 'on' | 'off' | 'single-layer'
-    // Face neighbours always count as 1. Edge (12) and corner (8) neighbours are
+    // Face neighbours always count as 1. Edge- and corner-touching neighbours are
     // weighted 1 | 0.5 | 0 when summing a block's proximity number.
     edgeWeight: 1,
-    cornerWeight: 1,
+    cornerWeight: 0.5,
     // Number of mistakes the run survives. '2' = the first misfire/detonation is forgiven.
     lives: '2', // '1' | '2' | '3' | '5' | 'inf'
     safeFirstStrike: true,
@@ -85,10 +91,15 @@ export function weightsFromSettings(s) {
     return {face: 1, edge: s.edgeWeight, corner: s.cornerWeight};
 }
 
+/** Settings -> the board spec fields understood by customLevel(). */
+export function boardFromSettings(s) {
+    return {w: s.boardW, d: s.boardD, h: s.boardH, mines: s.boardMines, tess: s.tessellation};
+}
+
 /** Short human label, e.g. "6 + 12(½)" for the HUD / hints. */
-export function adjacencyLabel(weights) {
-    const part = (n, w) => (w === 0 ? null : w === 1 ? `${n}` : `${n}(½)`);
-    return [part(6, weights.face), part(12, weights.edge), part(8, weights.corner)]
+export function adjacencyLabel(weights, classes = {face: 6, edge: 12, corner: 8}) {
+    const part = (n, w) => (n === 0 || w === 0 ? null : w === 1 ? `${n}` : `${n}(½)`);
+    return [part(classes.face, weights.face), part(classes.edge, weights.edge), part(classes.corner, weights.corner)]
         .filter(Boolean)
         .join(' + ');
 }

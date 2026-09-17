@@ -20,6 +20,8 @@ function make(size, draw) {
     tex.minFilter = THREE.NearestFilter;
     tex.generateMipmaps = false;
     tex.colorSpace = THREE.SRGBColorSpace;
+       // Non-cubic cell geometry projects UVs outside [0, 1]; let the tile repeat.
+       tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
     return tex;
 }
 

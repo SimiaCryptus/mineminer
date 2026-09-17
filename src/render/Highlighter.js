@@ -1,24 +1,33 @@
 import * as THREE from 'three';
 import {cellCenter} from './layout.js';
+import {cellGeometry} from './shapes.js';
 
-/** Minecraft-style selection box around the aimed block. */
+/** Minecraft-style selection outline around the aimed block, shaped like the board's cells. */
 export class Highlighter {
     constructor(scene) {
         this.scene = scene;
         this.group = new THREE.Group();
         this.group.visible = false;
         this.group.renderOrder = 5;
-        const inner = new THREE.LineSegments(
-            new THREE.EdgesGeometry(new THREE.BoxGeometry(1.03, 1.03, 1.03)),
-            new THREE.LineBasicMaterial({color: 0x000000}),
-        );
-        const outer = new THREE.LineSegments(
-            new THREE.EdgesGeometry(new THREE.BoxGeometry(1.07, 1.07, 1.07)),
-            new THREE.LineBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.35}),
-        );
-        this.group.add(inner, outer);
+        this.innerMat = new THREE.LineBasicMaterial({color: 0x000000});
+        this.outerMat = new THREE.LineBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.35});
         scene.add(this.group);
         this.cell = -1;
+    }
+
+    /** Rebuilds the outline for a tessellation's cell shape. */
+    setShape(tess) {
+        for (const child of [...this.group.children]) {
+            this.group.remove(child);
+            child.geometry.dispose();
+        }
+        const outline = (factor, mat) => {
+            const solid = cellGeometry(tess, factor);
+            const edges = new THREE.EdgesGeometry(solid, 10);
+            solid.dispose();
+            return new THREE.LineSegments(edges, mat);
+        };
+        this.group.add(outline(1.03, this.innerMat), outline(1.07, this.outerMat));
     }
 
     set(grid, cell) {

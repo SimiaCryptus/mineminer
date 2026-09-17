@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {INTACT, MARKED, MINE, SCAR} from '../game/Grid.js';
 import {LayeredInstances} from './LayeredInstances.js';
 import {getTextures} from './textures.js';
+   import {cellGeometry} from './shapes.js';
 
 const _c = new THREE.Color();
 const WHITE = new THREE.Color(0xffffff);
@@ -17,9 +18,10 @@ export class BlockRenderer {
         this.grid = grid;
         this.minesRevealed = false;
         const tex = getTextures();
-        this.boxGeo = new THREE.BoxGeometry(1, 1, 1);
-        this.markedGeo = new THREE.BoxGeometry(1.01, 1.01, 1.01);
-        this.oreGeo = new THREE.BoxGeometry(0.92, 0.92, 0.92);
+           // Cell shape comes from the board's tessellation (cubes, prisms, dodecahedra ...).
+           this.boxGeo = cellGeometry(grid.tess, 1);
+           this.markedGeo = cellGeometry(grid.tess, 1.01);
+           this.oreGeo = cellGeometry(grid.tess, 0.92);
 
         this.stone = new LayeredInstances(
             scene, grid, this.boxGeo,

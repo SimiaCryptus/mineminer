@@ -33,10 +33,7 @@ export class Hud {
         </div>
       </div>
       <div class="hud-tr">
-        <div class="layers"></div>
-        <button class="btn cam" title="Toggle camera (V)">🎥 Orbit</button>
-        <button class="btn menu" title="Levels">☰</button>
-        <button class="btn gear" title="Pause / settings (Space)">⚙</button>
+        <button class="btn gear" title="Pause / vault &amp; settings (Space)">⚙</button>
       </div>
       <div class="hud-bc">
         <button class="btn touch-mode hidden" title="Tap action">⛏</button>
@@ -53,18 +50,10 @@ export class Hud {
         this.livesEl = q('.lives');
         this.collapsesEl = q('.collapses');
         this.levelEl = q('.level-name');
-        this.layersEl = q('.layers');
-        this.camBtn = q('.cam');
         this.touchBtn = q('.touch-mode');
         this.hintEl = q('.hint');
         this.flashEl = q('.flash');
 
-        this.layersEl.addEventListener('click', (e) => {
-            const btn = e.target.closest('button[data-layer]');
-            if (btn) this.h.onLayer(Number(btn.dataset.layer));
-        });
-        this.camBtn.addEventListener('click', () => this.h.onCamera());
-        q('.menu').addEventListener('click', () => this.h.onMenu());
         q('.gear').addEventListener('click', () => this.h.onSettings());
         this.touchBtn.addEventListener('click', () => this.h.onTouchMode());
         if ('ontouchstart' in window || navigator.maxTouchPoints > 0) this.touchBtn.classList.remove('hidden');
@@ -106,18 +95,13 @@ export class Hud {
     }
 
     setLayers(count) {
-        this.layersEl.classList.toggle('hidden', count <= 1);
         let html = `<button class="btn" data-layer="-1" title="All layers (0)">0</button>`;
         for (let y = 0; y < count; y++) {
             html += `<button class="btn" data-layer="${y}" title="Isolate layer ${y + 1}">${y + 1}</button>`;
         }
-        this.layersEl.innerHTML = html;
     }
 
     setLayer(y) {
-        for (const btn of this.layersEl.querySelectorAll('button')) {
-            btn.classList.toggle('active', Number(btn.dataset.layer) === y);
-        }
     }
 
     setCameraMode(mode) {

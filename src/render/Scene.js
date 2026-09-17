@@ -77,18 +77,26 @@ export class SceneRig {
                 }
             });
         }
-        const {width: w, depth: d, height: h} = grid;
+       // The steel vault hugs the bounding box of whatever the tessellation fills
+       // (centred on x/z = 0, lowest point on y = 0).
+       const {min, max} = grid.bounds;
+       const w = max[0] - min[0];
+       const d = max[2] - min[2];
+       const h = max[1] - min[1];
+       const cx = (min[0] + max[0]) / 2;
+       const cz = (min[2] + max[2]) / 2;
+       const y0 = min[1];
         const tex = getTextures();
         const g = new THREE.Group();
 
         const floorTex = tex.steel.clone();
-        floorTex.repeat.set(w + 1, d + 1);
+       floorTex.repeat.set(Math.ceil(w + 1), Math.ceil(d + 1));
         floorTex.needsUpdate = true;
         const floor = new THREE.Mesh(
             new THREE.BoxGeometry(w + 1, 1, d + 1),
             new THREE.MeshStandardMaterial({map: floorTex, roughness: 0.55, metalness: 0.6}),
         );
-        floor.position.y = -0.5;
+       floor.position.set(cx, y0 - 0.5, cz);
         floor.receiveShadow = true;
         g.add(floor);
 
@@ -103,7 +111,7 @@ export class SceneRig {
         ];
         for (const [sx, sz, x, z] of walls) {
             const wall = new THREE.Mesh(new THREE.BoxGeometry(sx, h, sz), wallMat);
-            wall.position.set(x, h / 2, z);
+           wall.position.set(cx + x, y0 + h / 2, cz + z);
             g.add(wall);
         }
 
@@ -112,29 +120,33 @@ export class SceneRig {
             new THREE.EdgesGeometry(new THREE.BoxGeometry(w + 1, 0.3, d + 1)),
             new THREE.LineBasicMaterial({color: 0x6b7280}),
         );
-        lid.position.y = h + 0.15;
+       lid.position.set(cx, y0 + h + 0.15, cz);
         g.add(lid);
 
         this.scene.add(g);
         this.vault = g;
 
         const R = Math.max(w, d);
-        this.dir.position.set(w * 0.5, h + 14, d * 0.35);
-        this.dir.target.position.set(0, h / 2, 0);
+       this.dir.position.set(cx + w * 0.5, y0 + h + 14, cz + d * 0.35);
+       this.dir.target.position.set(cx, y0 + h / 2, cz);
         const cam = this.dir.shadow.camera;
         cam.left = cam.bottom = -(R * 0.8 + 2);
         cam.right = cam.top = R * 0.8 + 2;
         cam.near = 1;
         cam.far = 60;
         cam.updateProjectionMatrix();
-        this.warm.position.set(0, 0.3, 0);
+       this.warm.position.set(cx, y0 + 0.3, cz);
         this.scene.fog.density = Math.min(0.012, 0.25 / (R + 8));
     }
 
     frameBoard(grid, animate = false) {
-        const R = Math.max(grid.width, grid.depth);
-        const pos = new THREE.Vector3(R * 0.55, grid.height + R * 0.8, R * 1.05);
-        const target = new THREE.Vector3(0, grid.height / 2, 0);
+       const {min, max} = grid.bounds;
+       const R = Math.max(max[0] - min[0], max[2] - min[2]);
+       const h = max[1] - min[1];
+       const cx = (min[0] + max[0]) / 2;
+       const cz = (min[2] + max[2]) / 2;
+       const pos = new THREE.Vector3(cx + R * 0.55, min[1] + h + R * 0.8, cz + R * 1.05);
+       const target = new THREE.Vector3(cx, min[1] + h / 2, cz);
         this.controls.minDistance = 1.5;
         this.controls.maxDistance = R * 4 + 10;
         if (animate) {

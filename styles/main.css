@@ -123,6 +123,15 @@ body.miner #scene {
 .panel h2 {
     font-size: 1.3em;
 }
+   .panel h3 {
+       margin: 14px 0 4px;
+       font-size: 0.8em;
+       font-weight: 600;
+       color: var(--muted);
+       text-transform: uppercase;
+       letter-spacing: 0.08em;
+   }
+
 
 .panel .sub {
     color: var(--muted);
@@ -180,52 +189,12 @@ body.miner #scene {
     font-variant-numeric: tabular-nums;
 }
 
-.levels {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 16px;
-}
 
-.level {
-    display: grid;
-    grid-template-columns: 28px 1fr auto auto;
-    align-items: center;
-    gap: 12px;
-    text-align: left;
-    background: #131823;
-    color: var(--fg);
-    border: 1px solid #262e3d;
-    border-radius: 8px;
-    padding: 8px 12px;
-    cursor: pointer;
-}
 
-.level:hover {
-    background: #1b2233;
-}
 
-.level.current {
-    border-color: var(--accent);
-}
 
-.level .num {
-    color: var(--muted);
-    font-weight: 600;
-}
 
-.level .name small {
-    display: block;
-    color: var(--muted);
-    font-size: 0.8em;
-}
 
-.level .best {
-    color: var(--muted);
-    font-variant-numeric: tabular-nums;
-    min-width: 70px;
-    text-align: right;
-}
 
 .stars {
     color: var(--accent);
@@ -237,16 +206,21 @@ body.miner #scene {
     margin: 6px 0 10px;
 }
 
-.custom {
-    border-top: 1px solid #262e3d;
-    padding-top: 12px;
-}
 
-.custom .grid {
+   .settings .grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 4px 16px;
 }
+   .settings .actions {
+       align-items: center;
+       margin-top: 8px;
+   }
+   .settings .actions .sub {
+       margin: 0;
+       font-size: 0.85em;
+   }
+
 
 .end.lost h2 {
     color: var(--danger);

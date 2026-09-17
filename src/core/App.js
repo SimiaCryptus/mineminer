@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {EventBus} from './EventBus.js';
 import {
+  boardFromSettings,
   livesFromSetting,
   loadSettings,
   quantumLivesFromSetting,
@@ -11,7 +12,7 @@ import {randomSeedString, rngFromSeed} from './rng.js';
 import {Grid, MINED, normaliseWeights} from '../game/Grid.js';
 import {Board} from '../game/Board.js';
 import {placeMines} from '../game/MineGenerator.js';
-import {customLevel, LEVELS} from '../game/LevelDefs.js';
+import {customLevel} from '../game/LevelDefs.js';
 import {GameState, loadProgress, recordProgress} from '../game/GameState.js';
 import {SceneRig} from '../render/Scene.js';
 import {BoardView} from '../render/BoardView.js';
@@ -24,7 +25,7 @@ import {Overlay} from '../ui/Overlay.js';
 import {Sfx} from '../audio/sfx.js';
 
 const HINT =
-    'LMB strike · RMB mark · MMB probe · drag to orbit · 1-3 isolate layer · Alt x-ray · V miner view · Space menu';
+    'LMB strike · RMB mark · MMB probe · drag to orbit · 1-9 isolate layer · Alt x-ray · V miner view · Space menu';
 
 function parseWeights(p) {
     // Legacy links used adj=26 / adj=6; the modern form is we=<edge>&wc=<corner>.
@@ -43,17 +44,17 @@ function parseHash() {
         d: Number(p.get('d')) || Number(p.get('w')),
         h: Number(p.get('h')) || 1,
         mines: Number(p.get('m')) || 1,
+        tess: p.get('t') || 'cubic',
         seed: p.get('seed') || randomSeedString(),
         weights: parseWeights(p),
-        level: p.get('level'),
     };
 }
 
 function buildHash(spec, seed, weights) {
-    const base =
-        `w=${spec.w}&d=${spec.d}&h=${spec.h}&m=${spec.mines}` +
-        `&seed=${encodeURIComponent(seed)}&we=${weights.edge}&wc=${weights.corner}`;
-    return spec.custom ? base : `${base}&level=${spec.id}`;
+    return (
+        `w=${spec.w}&d=${spec.d}&h=${spec.h}&m=${spec.mines}&t=${spec.tess}` +
+        `&seed=${encodeURIComponent(seed)}&we=${weights.edge}&wc=${weights.corner}`
+    );
 }
 
 export class App {
@@ -71,7 +72,6 @@ export class App {
             onLayer: (y) => this.setLayerFocus(y),
             onCamera: () => this.toggleCameraMode(),
             onSettings: () => this.openSettings(),
-            onMenu: () => this.openMenu(),
             onTouchMode: () => this.toggleTouchMode(),
         });
         this.overlay = new Overlay(uiRoot, {
@@ -109,7 +109,7 @@ export class App {
         this.bus.on('board:started', () => this.hud.setHint(''));
 
         window.addEventListener('hashchange', () => this.startFromHash());
-        if (!this.startFromHash()) this.startLevel(0);
+        if (!this.startFromHash()) this.startBoard(this.specFromSettings(), randomSeedString());
 
         this.last = performance.now();
         this.loop = this.loop.bind(this);
@@ -118,21 +118,22 @@ export class App {
 
     // ------------------------------------------------------------------ boards
 
+    specFromSettings(s = this.settings) {
+        return customLevel(boardFromSettings(s));
+    }
+
+    /** Progress is kept per board spec and rule set; the seed is deliberately not part of it. */
+    progressKey() {
+        const w = this.grid.weights;
+        return `${this.spec.id}:e${w.edge}c${w.corner}`;
+    }
+
     startFromHash() {
         const p = parseHash();
         if (!p) return false;
         this.settings = {...this.settings, edgeWeight: p.weights.edge, cornerWeight: p.weights.corner};
-        const idx = LEVELS.findIndex(
-            (l) => l.id === p.level && l.w === p.w && l.d === p.d && l.h === p.h && l.mines === p.mines,
-        );
-        const spec = idx >= 0 ? {...LEVELS[idx], index: idx} : customLevel(p);
-        this.startBoard(spec, p.seed);
+        this.startBoard(customLevel(p), p.seed);
         return true;
-    }
-
-    startLevel(index, seed = randomSeedString()) {
-        const i = Math.max(0, Math.min(LEVELS.length - 1, index));
-        this.startBoard({...LEVELS[i], index: i}, seed);
     }
 
     startBoard(spec, seed) {
@@ -141,8 +142,17 @@ export class App {
         this.seed = seed;
         this.disposeBoard();
 
+        // The settings panel always shows the vault that is actually being played.
+        this.settings = {
+            ...this.settings,
+            boardW: spec.w,
+            boardD: spec.d,
+            boardH: spec.h,
+            boardMines: spec.mines,
+            tessellation: spec.tess,
+        };
         const s = this.settings;
-        const grid = new Grid(spec.w, spec.d, spec.h, weightsFromSettings(s));
+        const grid = new Grid(spec.w, spec.d, spec.h, weightsFromSettings(s), spec.tess);
         placeMines(grid, spec.mines, rngFromSeed(seed));
         this.grid = grid;
         const quantumLives = quantumLivesFromSetting(s.quantumLives);
@@ -165,6 +175,7 @@ export class App {
             hideSatisfied: s.hideSatisfied,
         });
         this.view.syncAll();
+        this.highlighter.setShape(grid.tess);
 
         this.rig.buildVault(grid);
         if (this.cameraMode === 'miner') this.exitMiner(false);
@@ -286,8 +297,8 @@ export class App {
     onAction(r) {
         const now = performance.now();
         const instant = this.settings.reducedMotion;
-        // Revealing / marking a cell can satisfy (or un-satisfy) up to 26 numbers
-        // around it, so every touched cell dirties its whole neighbourhood.
+        // Revealing / marking a cell can satisfy (or un-satisfy) every number around
+        // it, so every touched cell dirties its whole neighbourhood.
         const dirty = new Set();
         for (const c of r.changed) this.view.markDirty(c, dirty);
         let maxDelay = 0;
@@ -353,7 +364,7 @@ export class App {
         const token = this.runToken;
         setTimeout(() => token === this.runToken && this.sfx.win(), maxDelay);
         const stats = this.gameState.summary();
-        if (!this.spec.custom) recordProgress(this.spec.id, {timeMs: stats.timeMs, stars: stats.stars});
+        recordProgress(this.progressKey(), {timeMs: stats.timeMs, stars: stats.stars});
         setTimeout(() => token === this.runToken && this.showEnd(), maxDelay + 900);
     }
 
@@ -364,7 +375,7 @@ export class App {
             seed: this.seed,
             lives: this.board?.lives,
             quantumLives: this.board?.quantumLives,
-            hasNext: !this.spec.custom && this.spec.index + 1 < LEVELS.length,
+            best: loadProgress()[this.progressKey()]?.best ?? null,
         });
     }
 
@@ -489,12 +500,7 @@ export class App {
 
     openSettings() {
         this.gameState?.pause();
-        this.overlay.showSettings(this.settings, {seed: this.seed});
-    }
-
-    openMenu() {
-        this.gameState?.pause();
-        this.overlay.showMenu(LEVELS, loadProgress(), this.spec?.custom ? -1 : this.spec?.index);
+        this.overlay.showSettings(this.settings, {seed: this.seed, tess: this.grid.tess});
     }
 
     overlayAction(act, data) {
@@ -508,21 +514,17 @@ export class App {
             case 'newseed':
                 this.startBoard(this.spec, randomSeedString());
                 break;
-            case 'levels':
-                this.openMenu();
-                break;
             case 'settings':
                 this.openSettings();
                 break;
-            case 'level':
-                this.startLevel(Number(data.index));
+            case 'dig': {
+                // Take the panel's current values (rules included) and dig a fresh vault
+                // from them; the rule-change restart is skipped since we restart anyway.
+                if (data.settings) this.applySettings(data.settings, {restart: false});
+                const seed = (data.seed || '').trim() || randomSeedString();
+                this.startBoard(this.specFromSettings(), seed);
                 break;
-            case 'next':
-                this.startLevel((this.spec.index ?? -1) + 1);
-                break;
-            case 'custom':
-                this.startBoard(customLevel(data), data.seed || randomSeedString());
-                break;
+            }
             case 'copy':
                 navigator.clipboard?.writeText(location.href);
                 this.hud.flash('Board link copied');
@@ -530,7 +532,7 @@ export class App {
         }
     }
 
-    applySettings(next) {
+    applySettings(next, {restart = true} = {}) {
         const prev = this.settings;
         this.settings = next;
         saveSettings(next);
@@ -555,13 +557,14 @@ export class App {
         } else if (prev.hideSatisfied !== next.hideSatisfied) {
             this.view?.setHideSatisfied(next.hideSatisfied);
         }
-        if (
+        const rulesChanged =
             prev.edgeWeight !== next.edgeWeight ||
             prev.cornerWeight !== next.cornerWeight ||
             prev.lives !== next.lives ||
-            prev.quantumLives !== next.quantumLives
-        ) {
-            this.startBoard(this.spec, this.seed);
+            prev.quantumLives !== next.quantumLives ||
+            prev.tessellation !== next.tessellation;
+        if (rulesChanged && restart) {
+            this.startBoard(customLevel({...this.spec, tess: next.tessellation}), this.seed);
             this.hud.flash('Board restarted to apply the new rules');
             this.openSettings();
         }

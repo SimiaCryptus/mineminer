@@ -32,16 +32,14 @@ export class MinerController {
     findSpawn(grid) {
         let best = null;
         let bestScore = Infinity;
-        const cx = grid.width / 2;
-        const cz = grid.depth / 2;
+       const c = new THREE.Vector3();
         for (let i = 0; i < grid.cellCount; i++) {
             if (grid.state[i] !== MINED) continue;
             const y = grid.y(i);
             const above = y + 1 < grid.height ? i + grid.layerSize : -1;
             const headroom = above < 0 || !grid.isSolid(above);
-            const dx = grid.x(i) + 0.5 - cx;
-            const dz = grid.z(i) + 0.5 - cz;
-            const score = (headroom ? 0 : 1000) + dx * dx + dz * dz + y * 2;
+           cellCenter(grid, i, c); // the board is centred on x = z = 0
+           const score = (headroom ? 0 : 1000) + c.x * c.x + c.z * c.z + y * 2;
             if (score < bestScore) {
                 bestScore = score;
                 best = i;
@@ -88,14 +86,10 @@ export class MinerController {
         for (let sx = -1; sx <= 1; sx += 2) {
             for (let sy = -1; sy <= 1; sy += 2) {
                 for (let sz = -1; sz <= 1; sz += 2) {
-                    const x = p.x + sx * HALF.x;
-                    const y = cy0 + sy * HALF.y;
-                    const z = p.z + sz * HALF.z;
-                    const cx = Math.floor(x + grid.width / 2);
-                    const cyy = Math.floor(y);
-                    const cz = Math.floor(z + grid.depth / 2);
-                    if (!grid.inBounds(cx, cyy, cz)) return false; // steel floor/ceiling/walls
-                    if (grid.isSolid(grid.index(cx, cyy, cz))) return false;
+                   // Whatever cell shape the vault uses, the grid knows which cell a point is in;
+                   // outside the board is the steel floor / ceiling / walls.
+                   const i = grid.cellAt(p.x + sx * HALF.x, cy0 + sy * HALF.y, p.z + sz * HALF.z);
+                   if (i < 0 || grid.isSolid(i)) return false;
                 }
             }
         }
