@@ -5,10 +5,10 @@
  * (x - w/2 + 0.5, y + 0.5, z - d/2 + 0.5).
  */
 export function cellCenter(grid, i, out) {
-    return grid.centreOf(i, out);
+  return grid.centreOf(i, out);
 }
 
 /** World point -> cell index, or -1 if outside the play volume. */
 export function worldToCell(grid, x, y, z) {
-    return grid.cellAt(x, y, z);
+  return grid.cellAt(x, y, z);
 }

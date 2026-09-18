@@ -12,27 +12,27 @@ number simply appearing, the block shatters, dust flies, and a glowing transluce
 left hovering in the empty space where the block used to be — a permanent ghost you can read
 from any angle as you orbit or walk through the vault you've carved out.
 
-   The board can be one layer deep (which plays exactly like traditional Minesweeper), or many
-   layers stacked on top of each other — the default vault is an 8×8×8 cube with 30 mines. In the
-   deeper vaults, a single number can be warning you about mines above you, below you, or
-   diagonally through the block corner — up to 26 neighbouring cells instead of the familiar 8.
-   Reading those numbers well is the whole game.
+The board can be one layer deep (which plays exactly like traditional Minesweeper), or many
+layers stacked on top of each other — the default vault is an 8×8×8 cube with 30 mines. In the
+deeper vaults, a single number can be warning you about mines above you, below you, or
+diagonally through the block corner — up to 26 neighbouring cells instead of the familiar 8.
+Reading those numbers well is the whole game.
 
-   The blocks need not even be cubes. The vault can be tiled with hexagonal prisms, rhombic
-   dodecahedra or truncated octahedra instead — space-filling shapes with 20, 18 or 14
-   neighbours and their own mix of face-, edge- and corner-touching cells. Every shape, size and
-   mine count is set from the settings panel; there is no fixed level list.
+The blocks need not even be cubes. The vault can be tiled with hexagonal prisms, rhombic
+dodecahedra or truncated octahedra instead — space-filling shapes with 20, 18 or 14
+neighbours and their own mix of face-, edge- and corner-touching cells. Every shape, size and
+mine count is set from the settings panel; there is no fixed level list.
 
 ## The idea in brief
 
 Minesweeper survives because it's really a logic puzzle wearing a minimal, almost incidental
-skin. MineMiner asks: what happens if you take that same logic puzzle and give it a *body* —
+skin. MineMiner asks: what happens if you take that same logic puzzle and give it a _body_ —
 a floor, a ceiling, dust, sound, gravity, a camera you can spin and walk with? The numbers
 don't disappear once solved; they stay behind as glowing markers, so a cleared vault becomes
 a kind of readable hologram of its own solution, something you can look back at and admire or
 double-check.
 
-Marking a suspected mine also does something new here: it makes that block *safe to strike*.
+Marking a suspected mine also does something new here: it makes that block _safe to strike_.
 A correctly marked mine gets defused rather than detonated when you hit it, and an incorrectly
 marked block just gets cleared with a small penalty. This turns flagging from a passive note
 into an active decision with real stakes — commit to your read of the board, and you get a
@@ -44,10 +44,10 @@ safety net; commit wrongly too often and it costs you.
   play — but the third dimension changes the texture of the puzzle completely. Numbers become
   denser, ambiguous, and genuinely difficult to parse at first, then click into place once
   you learn to think in shells and layers instead of rows and columns.
-   - **Familiar rules, new tilings.** Swap the cubes for hexagonal prisms, rhombic dodecahedra
-     or truncated octahedra and the same numbers describe a different neighbourhood: fewer
-     cells, differently arranged, some touching only along an edge or at a single vertex — and
-     you decide how much those count for (1, ½ or nothing).
+  - **Familiar rules, new tilings.** Swap the cubes for hexagonal prisms, rhombic dodecahedra
+    or truncated octahedra and the same numbers describe a different neighbourhood: fewer
+    cells, differently arranged, some touching only along an edge or at a single vertex — and
+    you decide how much those count for (1, ½ or nothing).
 - **The board remembers itself.** Every number you've ever uncovered stays visible as a soft
   glowing marker. You're not solving a puzzle that vanishes as you go — you're excavating a
   structure that keeps a visual record of your reasoning, layer by layer.
@@ -61,11 +61,11 @@ safety net; commit wrongly too often and it costs you.
   actual chain reaction tunnelling through the rock, shell by shell, with sound and dust — a
   small, satisfying payoff for good deduction.
 - **No coin flips.** When the numbers genuinely can't tell you whether a block is a mine, your
-  action *decides*: mark it and the vault collapses into a valid world where that block is the
+  action _decides_: mark it and the vault collapses into a valid world where that block is the
   mine; strike it and the vault collapses into a valid world where it is safe ("quantum grace").
   Anything the numbers prove stays exactly as proven; blind digging is covered too, as long as
   some block no number has seen yet can take the mine instead. How much of this you get is up to
-  you: *quantum lives* are a budget of collapses (0 … ∞) that is spent before your ordinary lives,
+  you: _quantum lives_ are a budget of collapses (0 … ∞) that is spent before your ordinary lives,
   so you can play with a safety net, with exactly two miracles, or with none at all. Every collapse
   is counted — a flawless, fully deduced clear is still the thing to aim for.
 

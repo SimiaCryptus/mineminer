@@ -1,69 +1,84 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>theme_design — Minefield 3D palette · multiverse pack</title>
     <style>
-        html, body { margin: 0; height: 100%; background: #0a0c11; color: #e6e9ef;
-            font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-        point-cad { position: fixed; inset: 0; display: block; }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #0a0c11;
+        color: #e6e9ef;
+        font:
+          14px/1.5 system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+      }
+      point-cad {
+        position: fixed;
+        inset: 0;
+        display: block;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <point-cad
-            id="cad"
-            panels="swatches,preview,handoff,variables,points,constraints,script,solve"
+      id="cad"
+      panels="swatches,preview,handoff,variables,points,constraints,script,solve"
     ></point-cad>
 
-<script type="application/json" id="theme-doc">
-{
-  "generator": "analyze.op",
-  "generated": "2025-01-01T00:00:00Z",
-  "pcad": "# theme_design — Minefield 3D UI: dark theme found in CSS, light theme proposed\nspace oklab\nunits none deg\ngamut srgb\n\nvar stepL       = 0.03          # surface ramp, measured +0.030 / +0.020 (mean 0.03)\nvar hoverStep   = 0.07          # .btn -> .btn:hover measured +0.070 L\nvar mutedC      = 4.5   locked  # --muted on --bg: AA floor for secondary text\nvar linkC       = 0.17  shared  # --accent2 chroma, identical in every theme\nvar brandHoverL = 0.045         # --accent -> .btn.primary:hover measured +0.045 L\n\n# ---- inputs -------------------------------------------------------------\npoint canvas      at #0a0c11                anchor      # --bg, body background\npoint brand       at #ff9a3c                anchor      # --accent, primary button / flash\npoint warmth      at oklch(30% 0.03 265)    orientation # hue the panels/buttons lean to (264-269)\npoint readingGray at oklch(60% 0.012 264)   orientation # hue+chroma shared by text, muted, borders\n\n# ---- outputs (seeds = observed values from the dark CSS) ----------------\npoint surface1     at oklch(16.5% 0.014 264) derived    # --panel #0e1118, .mines-count, .hint\npoint surface2     at oklch(18.5% 0.016 264) derived    # .row input/select #10141c, .panel code\npoint surface3     at oklch(26.5% 0.024 265) derived    # .btn #1c2230\npoint surfaceHover at oklch(33.5% 0.048 269) derived    # .btn:hover #26304a\npoint text         at oklch(92.5% 0.006 265) derived    # --fg #e6e9ef\npoint textMuted    at oklch(62% 0.021 263)   derived    # --muted #8b93a5\npoint border       at oklch(35.5% 0.028 265) derived    # #2f3848 (.btn, inputs)\npoint borderMuted  at oklch(32% 0.027 266)   derived    # #2a3142 / #262e3d\npoint brandHover   at oklch(82.5% 0.12 64)   derived    # #ffb066\npoint onBrand      at oklch(14.5% 0.02 60)   derived    # #1a0f05 text on .btn.primary\npoint link         at oklch(65.5% 0.17 262)  derived    # --accent2 #4d8dff\npoint danger       at oklch(63% 0.21 25)     derived    # --danger #ff4646\npoint success      at oklch(80% 0.19 145)    derived    # .end.won h2 #3ddc5a\npoint arcane       at oklch(66% 0.19 300)    derived    # .collapses #b57bff\n\n# ---- surfaces: even lightness ramp above the canvas, one cool hue -------\ndL canvas surface1   = stepL\ndL surface1 surface2 = stepL\ndL surface2 surface3 = stepL\nlock H warmth surface1 surface2 surface3 surfaceHover weight 0.3\nlock C surface1 surface2 surface3\ndC canvas surface3 = 0.013            # measured 0.024 - 0.011\nlock C surface3 surfaceHover\ndL surface3 surfaceHover = hoverStep\n\n# ---- text and border family: one hue, lightness set by contrast --------\nlock H readingGray text textMuted border borderMuted\nlock C text textMuted\nC text = 0.008\nlock C border borderMuted\nC border = 0.027\ncontrast text canvas      >= 7         # AAA body text (currently 14.6:1)\ncontrast textMuted canvas >= mutedC    # AA secondary text (currently 6.0:1)\ncontrast border canvas    >= 3         # UI component minimum (currently ~2.0:1 - FAILS)\ndL borderMuted border = 0.035          # #2a3142 -> #2f3848\ndistance canvas text      -> min weight 0.05\ndistance canvas textMuted -> min weight 0.05\ndistance canvas border    -> min weight 0.05\n\n# ---- brand, its hover shade and its foreground -------------------------\nlock H brand brandHover onBrand\ndL brand brandHover = brandHoverL\ndC brand brandHover = -0.035\nC onBrand = 0.02\ncontrast onBrand brand >= 4.5          # label on the primary button\ndistance brand onBrand -> min weight 0.05\ncontrast brand canvas  >= 3            # accent used for borders and large text\n\n# ---- semantic hues, all measured as offsets from the brand hue ---------\ndH brand link    = -160                # 62 deg -> 262 deg (--accent2)\nC link = linkC\ncontrast link canvas >= 4.5\ndistance canvas link -> min weight 0.05\ndH brand danger  = -37                 # 62 deg -> 25 deg\nC danger = 0.21\ncontrast danger canvas >= 4.5\ndistance canvas danger -> min weight 0.05\ndH brand success = 83                  # 62 deg -> 145 deg\nC success = 0.19\ncontrast success canvas >= 4.5\ndistance canvas success -> min weight 0.05\ndH brand arcane  = -122                # 62 deg -> 300 deg\nC arcane = 0.19\ncontrast arcane canvas >= 4.5\ndistance canvas arcane -> min weight 0.05\n\n# ---- themes -------------------------------------------------------------\ntheme dark {                           # found: the whole current stylesheet\n  canvas at #0a0c11\n  brand  at #ff9a3c\n  warmth      at oklch(30% 0.03 265)\n  readingGray at oklch(60% 0.012 264)\n  var stepL = 0.03\n  var hoverStep = 0.07\n}\ntheme light {                          # proposed: no light scheme exists in the CSS\n  canvas      at oklch(97% 0.004 265)\n  brand       at oklch(62% 0.16 55)\n  warmth      at oklch(85% 0.02 265)\n  readingGray at oklch(45% 0.012 264)\n  var stepL = -0.025\n  var hoverStep = -0.05\n  text        at oklch(22% 0.008 264)  # seeds only: keep outputs on the dark side\n  textMuted   at oklch(45% 0.008 264)\n  border      at oklch(60% 0.027 264)\n  borderMuted at oklch(64% 0.027 264)\n  link        at oklch(48% 0.17 262)\n  danger      at oklch(50% 0.21 25)\n  success     at oklch(48% 0.19 145)\n  arcane      at oklch(50% 0.19 300)\n  onBrand     at oklch(20% 0.02 60)\n}\n\nsolver gauss-newton iterations 200 tolerance 1e-6\nview camera (300, 250, 400) target (0, 0, 200) up (0, 0, 1) perspective\nview grid none show labels axes hide seeds\n",
-  "doc": {
-    "project": "Minefield 3D UI",
-    "prefix": "color-",
-    "format": "oklch",
-    "scope": ":root",
-    "switchMode": "media,attribute",
-    "defaultTheme": "dark",
-    "fallback": true,
+    <script type="application/json" id="theme-doc">
+      {
+        "generator": "analyze.op",
+        "generated": "2025-01-01T00:00:00Z",
+        "pcad": "# theme_design — Minefield 3D UI: dark theme found in CSS, light theme proposed\nspace oklab\nunits none deg\ngamut srgb\n\nvar stepL       = 0.03          # surface ramp, measured +0.030 / +0.020 (mean 0.03)\nvar hoverStep   = 0.07          # .btn -> .btn:hover measured +0.070 L\nvar mutedC      = 4.5   locked  # --muted on --bg: AA floor for secondary text\nvar linkC       = 0.17  shared  # --accent2 chroma, identical in every theme\nvar brandHoverL = 0.045         # --accent -> .btn.primary:hover measured +0.045 L\n\n# ---- inputs -------------------------------------------------------------\npoint canvas      at #0a0c11                anchor      # --bg, body background\npoint brand       at #ff9a3c                anchor      # --accent, primary button / flash\npoint warmth      at oklch(30% 0.03 265)    orientation # hue the panels/buttons lean to (264-269)\npoint readingGray at oklch(60% 0.012 264)   orientation # hue+chroma shared by text, muted, borders\n\n# ---- outputs (seeds = observed values from the dark CSS) ----------------\npoint surface1     at oklch(16.5% 0.014 264) derived    # --panel #0e1118, .mines-count, .hint\npoint surface2     at oklch(18.5% 0.016 264) derived    # .row input/select #10141c, .panel code\npoint surface3     at oklch(26.5% 0.024 265) derived    # .btn #1c2230\npoint surfaceHover at oklch(33.5% 0.048 269) derived    # .btn:hover #26304a\npoint text         at oklch(92.5% 0.006 265) derived    # --fg #e6e9ef\npoint textMuted    at oklch(62% 0.021 263)   derived    # --muted #8b93a5\npoint border       at oklch(35.5% 0.028 265) derived    # #2f3848 (.btn, inputs)\npoint borderMuted  at oklch(32% 0.027 266)   derived    # #2a3142 / #262e3d\npoint brandHover   at oklch(82.5% 0.12 64)   derived    # #ffb066\npoint onBrand      at oklch(14.5% 0.02 60)   derived    # #1a0f05 text on .btn.primary\npoint link         at oklch(65.5% 0.17 262)  derived    # --accent2 #4d8dff\npoint danger       at oklch(63% 0.21 25)     derived    # --danger #ff4646\npoint success      at oklch(80% 0.19 145)    derived    # .end.won h2 #3ddc5a\npoint arcane       at oklch(66% 0.19 300)    derived    # .collapses #b57bff\n\n# ---- surfaces: even lightness ramp above the canvas, one cool hue -------\ndL canvas surface1   = stepL\ndL surface1 surface2 = stepL\ndL surface2 surface3 = stepL\nlock H warmth surface1 surface2 surface3 surfaceHover weight 0.3\nlock C surface1 surface2 surface3\ndC canvas surface3 = 0.013            # measured 0.024 - 0.011\nlock C surface3 surfaceHover\ndL surface3 surfaceHover = hoverStep\n\n# ---- text and border family: one hue, lightness set by contrast --------\nlock H readingGray text textMuted border borderMuted\nlock C text textMuted\nC text = 0.008\nlock C border borderMuted\nC border = 0.027\ncontrast text canvas      >= 7         # AAA body text (currently 14.6:1)\ncontrast textMuted canvas >= mutedC    # AA secondary text (currently 6.0:1)\ncontrast border canvas    >= 3         # UI component minimum (currently ~2.0:1 - FAILS)\ndL borderMuted border = 0.035          # #2a3142 -> #2f3848\ndistance canvas text      -> min weight 0.05\ndistance canvas textMuted -> min weight 0.05\ndistance canvas border    -> min weight 0.05\n\n# ---- brand, its hover shade and its foreground -------------------------\nlock H brand brandHover onBrand\ndL brand brandHover = brandHoverL\ndC brand brandHover = -0.035\nC onBrand = 0.02\ncontrast onBrand brand >= 4.5          # label on the primary button\ndistance brand onBrand -> min weight 0.05\ncontrast brand canvas  >= 3            # accent used for borders and large text\n\n# ---- semantic hues, all measured as offsets from the brand hue ---------\ndH brand link    = -160                # 62 deg -> 262 deg (--accent2)\nC link = linkC\ncontrast link canvas >= 4.5\ndistance canvas link -> min weight 0.05\ndH brand danger  = -37                 # 62 deg -> 25 deg\nC danger = 0.21\ncontrast danger canvas >= 4.5\ndistance canvas danger -> min weight 0.05\ndH brand success = 83                  # 62 deg -> 145 deg\nC success = 0.19\ncontrast success canvas >= 4.5\ndistance canvas success -> min weight 0.05\ndH brand arcane  = -122                # 62 deg -> 300 deg\nC arcane = 0.19\ncontrast arcane canvas >= 4.5\ndistance canvas arcane -> min weight 0.05\n\n# ---- themes -------------------------------------------------------------\ntheme dark {                           # found: the whole current stylesheet\n  canvas at #0a0c11\n  brand  at #ff9a3c\n  warmth      at oklch(30% 0.03 265)\n  readingGray at oklch(60% 0.012 264)\n  var stepL = 0.03\n  var hoverStep = 0.07\n}\ntheme light {                          # proposed: no light scheme exists in the CSS\n  canvas      at oklch(97% 0.004 265)\n  brand       at oklch(62% 0.16 55)\n  warmth      at oklch(85% 0.02 265)\n  readingGray at oklch(45% 0.012 264)\n  var stepL = -0.025\n  var hoverStep = -0.05\n  text        at oklch(22% 0.008 264)  # seeds only: keep outputs on the dark side\n  textMuted   at oklch(45% 0.008 264)\n  border      at oklch(60% 0.027 264)\n  borderMuted at oklch(64% 0.027 264)\n  link        at oklch(48% 0.17 262)\n  danger      at oklch(50% 0.21 25)\n  success     at oklch(48% 0.19 145)\n  arcane      at oklch(50% 0.19 300)\n  onBrand     at oklch(20% 0.02 60)\n}\n\nsolver gauss-newton iterations 200 tolerance 1e-6\nview camera (300, 250, 400) target (0, 0, 200) up (0, 0, 1) perspective\nview grid none show labels axes hide seeds\n",
+        "doc": {
+          "project": "Minefield 3D UI",
+          "prefix": "color-",
+          "format": "oklch",
+          "scope": ":root",
+          "switchMode": "media,attribute",
+          "defaultTheme": "dark",
+          "fallback": true,
 
-    "summary": "**Files scanned (2):** `styles/main.css`, `styles/hud.css`.\n\n- 24 colour literals (plus 5 alpha-only variants of colours already in the set).\n- 16 distinct clusters after merging at dE_ok <= 0.02.\n- **Themes:** 1 found (`dark` — the stylesheet has no `prefers-color-scheme`, no `[data-theme]`, no `.dark` class; the canvas is `#0a0c11`, so the found scheme is emitted as `theme dark`). 1 **proposed** (`light`, anchors + orientation + seeds only).\n- 14 derived tokens + 2 anchors = 16 exported custom properties.\n- **3 accessibility findings** (see Findings): `border` vs `canvas`, `--muted` inside `.hint` on a translucent panel, and `.btn.primary` label contrast.",
+          "summary": "**Files scanned (2):** `styles/main.css`, `styles/hud.css`.\n\n- 24 colour literals (plus 5 alpha-only variants of colours already in the set).\n- 16 distinct clusters after merging at dE_ok <= 0.02.\n- **Themes:** 1 found (`dark` — the stylesheet has no `prefers-color-scheme`, no `[data-theme]`, no `.dark` class; the canvas is `#0a0c11`, so the found scheme is emitted as `theme dark`). 1 **proposed** (`light`, anchors + orientation + seeds only).\n- 14 derived tokens + 2 anchors = 16 exported custom properties.\n- **3 accessibility findings** (see Findings): `border` vs `canvas`, `--muted` inside `.hint` on a translucent panel, and `.btn.primary` label contrast.",
 
-    "inventory": "| # | cluster | members (literals) | normalised | text | bg | border | other | context | states |\n|---|---|---|---|---|---|---|---|---|---|\n| 1 | canvas | `#0a0c11` (`--bg`), `rgba(10,12,17,.9)`, `rgba(10,12,17,.7)` | `oklch(13.500% 0.01100 265.00)` | 0 | 4 | 0 | 0 | none | rest |\n| 2 | surface1 | `rgba(14,17,24,.94)` (`--panel`) | `oklch(16.500% 0.01400 264.00)` | 0 | 1 | 0 | 0 | none | rest |\n| 3 | surface2 | `#10141c` | `oklch(18.500% 0.01600 264.00)` | 0 | 2 | 0 | 0 | none | rest |\n| 4 | surface3 | `#1c2230` | `oklch(26.500% 0.02400 265.00)` | 0 | 1 | 0 | 0 | none | rest |\n| 5 | surfaceHover | `#26304a` | `oklch(33.500% 0.04800 269.00)` | 0 | 1 | 0 | 0 | none | `:hover` |\n| 6 | text | `#e6e9ef` (`--fg`) | `oklch(92.500% 0.00600 265.00)` | 3 | 0 | 0 | 0 | none | rest |\n| 7 | textMuted | `#8b93a5` (`--muted`) | `oklch(62.000% 0.02100 263.00)` | 6 | 0 | 0 | 0 | none | rest |\n| 8 | border | `#2f3848` | `oklch(35.500% 0.02800 265.00)` | 0 | 0 | 3 | 0 | none | rest |\n| 9 | borderMuted | `#2a3142`, `#262e3d` | `oklch(32.000% 0.02700 266.00)` | 0 | 0 | 2 | 0 | none | rest |\n| 10 | brand | `#ff9a3c` (`--accent`), `rgba(255,154,60,.15)` | `oklch(78.000% 0.15500 62.00)` | 2 | 1 | 2 | 1 (outline) | none | rest, `.active` |\n| 11 | brandHover | `#ffb066` | `oklch(82.500% 0.12000 64.00)` | 0 | 1 | 0 | 0 | none | `:hover` |\n| 12 | onBrand | `#1a0f05` | `oklch(14.500% 0.02000 60.00)` | 1 | 0 | 0 | 0 | none | rest |\n| 13 | link | `#4d8dff` (`--accent2`) | `oklch(65.500% 0.17000 262.00)` | 2 | 0 | 0 | 1 (conic stop) | none | rest |\n| 14 | danger | `#ff4646` (`--danger`) | `oklch(63.000% 0.21000 25.00)` | 1 | 0 | 0 | 0 | none | rest |\n| 15 | success | `#3ddc5a` | `oklch(80.000% 0.19000 145.00)` | 1 | 0 | 0 | 0 | none | rest |\n| 16 | arcane | `#b57bff` | `oklch(66.000% 0.19000 300.00)` | 1 | 0 | 0 | 0 | none | rest |\n\n**Alpha / overlay / gradient values (not tokenised as colours):**\n\n| literal | where | property | note |\n|---|---|---|---|\n| `rgba(0,0,0,.55)` | `main.css` `.overlay` | background | pure black scrim, keep literal |\n| `rgba(0,0,0,.6)` | `main.css` `.panel` | box-shadow | shadow, keep literal |\n| `rgba(255,255,255,.08)` | `hud.css` `.mines-ring` | conic stop | track behind `--accent2`, use `color-mix` with `text` |\n| `rgba(255,255,255,.85)` | `hud.css` `.crosshair` | background | `mix-blend-mode: difference`, keep literal |\n| `rgba(10,12,17,.9/.7)` | `hud.css` `.mines-count`, `.hint` | background | `canvas` at alpha |\n| `rgba(255,154,60,.15)` | `hud.css` `.flash` | background | `brand` at alpha |\n| `transparent` | `main.css` `.btn.primary` | border-color | not a colour |\n\nSkipped files: none — both stylesheets are first-party.",
+          "inventory": "| # | cluster | members (literals) | normalised | text | bg | border | other | context | states |\n|---|---|---|---|---|---|---|---|---|---|\n| 1 | canvas | `#0a0c11` (`--bg`), `rgba(10,12,17,.9)`, `rgba(10,12,17,.7)` | `oklch(13.500% 0.01100 265.00)` | 0 | 4 | 0 | 0 | none | rest |\n| 2 | surface1 | `rgba(14,17,24,.94)` (`--panel`) | `oklch(16.500% 0.01400 264.00)` | 0 | 1 | 0 | 0 | none | rest |\n| 3 | surface2 | `#10141c` | `oklch(18.500% 0.01600 264.00)` | 0 | 2 | 0 | 0 | none | rest |\n| 4 | surface3 | `#1c2230` | `oklch(26.500% 0.02400 265.00)` | 0 | 1 | 0 | 0 | none | rest |\n| 5 | surfaceHover | `#26304a` | `oklch(33.500% 0.04800 269.00)` | 0 | 1 | 0 | 0 | none | `:hover` |\n| 6 | text | `#e6e9ef` (`--fg`) | `oklch(92.500% 0.00600 265.00)` | 3 | 0 | 0 | 0 | none | rest |\n| 7 | textMuted | `#8b93a5` (`--muted`) | `oklch(62.000% 0.02100 263.00)` | 6 | 0 | 0 | 0 | none | rest |\n| 8 | border | `#2f3848` | `oklch(35.500% 0.02800 265.00)` | 0 | 0 | 3 | 0 | none | rest |\n| 9 | borderMuted | `#2a3142`, `#262e3d` | `oklch(32.000% 0.02700 266.00)` | 0 | 0 | 2 | 0 | none | rest |\n| 10 | brand | `#ff9a3c` (`--accent`), `rgba(255,154,60,.15)` | `oklch(78.000% 0.15500 62.00)` | 2 | 1 | 2 | 1 (outline) | none | rest, `.active` |\n| 11 | brandHover | `#ffb066` | `oklch(82.500% 0.12000 64.00)` | 0 | 1 | 0 | 0 | none | `:hover` |\n| 12 | onBrand | `#1a0f05` | `oklch(14.500% 0.02000 60.00)` | 1 | 0 | 0 | 0 | none | rest |\n| 13 | link | `#4d8dff` (`--accent2`) | `oklch(65.500% 0.17000 262.00)` | 2 | 0 | 0 | 1 (conic stop) | none | rest |\n| 14 | danger | `#ff4646` (`--danger`) | `oklch(63.000% 0.21000 25.00)` | 1 | 0 | 0 | 0 | none | rest |\n| 15 | success | `#3ddc5a` | `oklch(80.000% 0.19000 145.00)` | 1 | 0 | 0 | 0 | none | rest |\n| 16 | arcane | `#b57bff` | `oklch(66.000% 0.19000 300.00)` | 1 | 0 | 0 | 0 | none | rest |\n\n**Alpha / overlay / gradient values (not tokenised as colours):**\n\n| literal | where | property | note |\n|---|---|---|---|\n| `rgba(0,0,0,.55)` | `main.css` `.overlay` | background | pure black scrim, keep literal |\n| `rgba(0,0,0,.6)` | `main.css` `.panel` | box-shadow | shadow, keep literal |\n| `rgba(255,255,255,.08)` | `hud.css` `.mines-ring` | conic stop | track behind `--accent2`, use `color-mix` with `text` |\n| `rgba(255,255,255,.85)` | `hud.css` `.crosshair` | background | `mix-blend-mode: difference`, keep literal |\n| `rgba(10,12,17,.9/.7)` | `hud.css` `.mines-count`, `.hint` | background | `canvas` at alpha |\n| `rgba(255,154,60,.15)` | `hud.css` `.flash` | background | `brand` at alpha |\n| `transparent` | `main.css` `.btn.primary` | border-color | not a colour |\n\nSkipped files: none — both stylesheets are first-party.",
 
-    "tokenMap": "| token | custom property | role | dark (observed) | light (*derived*) | clusters merged | notes |\n|---|---|---|---|---|---|---|\n| `canvas` | `--color-canvas` | anchor | `#0a0c11` | *seeded* `oklch(97% 0.004 265)` | 1 | `--bg`; also used at .9/.7 alpha in the HUD |\n| `brand` | `--color-brand` | anchor | `#ff9a3c` | *seeded* `oklch(62% 0.16 55)` | 10 | `--accent` |\n| `surface1` | `--color-surface-1` | derived | `#0e1118` | *derived* | 2 | `--panel` (alpha .94 kept) |\n| `surface2` | `--color-surface-2` | derived | `#10141c` | *derived* | 3 | inputs, `code` |\n| `surface3` | `--color-surface-3` | derived | `#1c2230` | *derived* | 4 | `.btn` rest |\n| `surfaceHover` | `--color-surface-hover` | derived | `#26304a` | *derived* | 5 | `.btn:hover` |\n| `text` | `--color-text` | derived | `#e6e9ef` | *derived* | 6 | `--fg` |\n| `textMuted` | `--color-text-muted` | derived | `#8b93a5` | *derived* | 7 | `--muted`, `.level-name`, `.hint` |\n| `border` | `--color-border` | derived | `#2f3848` | *derived* | 8 | `.btn`, `.row input` |\n| `borderMuted` | `--color-border-muted` | derived | `#2a3142` | *derived* | 9 | `.panel`, `.hint` |\n| `brandHover` | `--color-brand-hover` | derived | `#ffb066` | *derived* | 11 | `.btn.primary:hover` |\n| `onBrand` | `--color-on-brand` | derived | `#1a0f05` | *derived* | 12 | text on `.btn.primary` |\n| `link` | `--color-link` | derived | `#4d8dff` | *derived* | 13 | `--accent2`, mines ring, `code` |\n| `danger` | `--color-danger` | derived | `#ff4646` | *derived* | 14 | `--danger`, `.end.lost h2` |\n| `success` | `--color-success` | derived | `#3ddc5a` | *derived* | 15 | `.end.won h2` |\n| `arcane` | `--color-arcane` | derived | `#b57bff` | *derived* | 16 | `.collapses` |\n| `warmth` | — | orientation | `oklch(30% 0.03 265)` | `oklch(85% 0.02 265)` | — | not exported; steers the surface ramp hue |\n| `readingGray` | — | orientation | `oklch(60% 0.012 264)` | `oklch(45% 0.012 264)` | — | not exported; hue/chroma of the gray family |\n\nEvery cluster in the inventory is tokenised; the alpha/overlay table is covered by `alpha` and `skip`.",
+          "tokenMap": "| token | custom property | role | dark (observed) | light (*derived*) | clusters merged | notes |\n|---|---|---|---|---|---|---|\n| `canvas` | `--color-canvas` | anchor | `#0a0c11` | *seeded* `oklch(97% 0.004 265)` | 1 | `--bg`; also used at .9/.7 alpha in the HUD |\n| `brand` | `--color-brand` | anchor | `#ff9a3c` | *seeded* `oklch(62% 0.16 55)` | 10 | `--accent` |\n| `surface1` | `--color-surface-1` | derived | `#0e1118` | *derived* | 2 | `--panel` (alpha .94 kept) |\n| `surface2` | `--color-surface-2` | derived | `#10141c` | *derived* | 3 | inputs, `code` |\n| `surface3` | `--color-surface-3` | derived | `#1c2230` | *derived* | 4 | `.btn` rest |\n| `surfaceHover` | `--color-surface-hover` | derived | `#26304a` | *derived* | 5 | `.btn:hover` |\n| `text` | `--color-text` | derived | `#e6e9ef` | *derived* | 6 | `--fg` |\n| `textMuted` | `--color-text-muted` | derived | `#8b93a5` | *derived* | 7 | `--muted`, `.level-name`, `.hint` |\n| `border` | `--color-border` | derived | `#2f3848` | *derived* | 8 | `.btn`, `.row input` |\n| `borderMuted` | `--color-border-muted` | derived | `#2a3142` | *derived* | 9 | `.panel`, `.hint` |\n| `brandHover` | `--color-brand-hover` | derived | `#ffb066` | *derived* | 11 | `.btn.primary:hover` |\n| `onBrand` | `--color-on-brand` | derived | `#1a0f05` | *derived* | 12 | text on `.btn.primary` |\n| `link` | `--color-link` | derived | `#4d8dff` | *derived* | 13 | `--accent2`, mines ring, `code` |\n| `danger` | `--color-danger` | derived | `#ff4646` | *derived* | 14 | `--danger`, `.end.lost h2` |\n| `success` | `--color-success` | derived | `#3ddc5a` | *derived* | 15 | `.end.won h2` |\n| `arcane` | `--color-arcane` | derived | `#b57bff` | *derived* | 16 | `.collapses` |\n| `warmth` | — | orientation | `oklch(30% 0.03 265)` | `oklch(85% 0.02 265)` | — | not exported; steers the surface ramp hue |\n| `readingGray` | — | orientation | `oklch(60% 0.012 264)` | `oklch(45% 0.012 264)` | — | not exported; hue/chroma of the gray family |\n\nEvery cluster in the inventory is tokenised; the alpha/overlay table is covered by `alpha` and `skip`.",
 
-    "relations": "| rule | tokens | evidence (dark) | status |\n|---|---|---|---|\n| `dL canvas surface1 = stepL` | canvas, surface1 | `+0.030` | holds |\n| `dL surface1 surface2 = stepL` | surface1, surface2 | `+0.020` (within ±0.01 of 0.03) | holds |\n| `dL surface2 surface3 = stepL` | surface2, surface3 | `+0.080` — the `.btn` sits two steps up | **design decision**: the ramp is regularised, `.btn` becomes one even step lighter |\n| `lock H warmth surface1..3 surfaceHover` | surfaces | hues 264 / 264 / 265 / 269 (arc 5°) | holds (weight 0.3) |\n| `lock C surface1..3` + `dC canvas surface3 = 0.013` | surfaces | C 0.014 / 0.016 / 0.024 vs canvas 0.011 | holds within ±0.005 after regularisation |\n| `dL surface3 surfaceHover = hoverStep` | `.btn:hover` | `+0.070` | holds |\n| `lock H readingGray text textMuted border borderMuted` | gray family | hues 265 / 263 / 265 / 266 | holds; hue taken from the orientation point (see Findings) |\n| `C text = 0.008`, `lock C text textMuted` | text | 0.006 / 0.021 | **design decision**: one chroma for the whole text family |\n| `C border = 0.027`, `lock C border borderMuted` | borders | 0.028 / 0.027 | holds |\n| `contrast text canvas >= 7` | text | 14.6:1 | holds (AAA) |\n| `contrast textMuted canvas >= 4.5` | textMuted | 6.0:1 | holds (AA) |\n| `contrast border canvas >= 3` | border | ~2.0:1 | **floor the CSS fails** |\n| `dL borderMuted border = 0.035` | borders | `#2a3142` → `#2f3848` = `+0.035` | holds |\n| `lock H brand brandHover onBrand` | brand family | 62 / 64 / 60 | holds |\n| `dL brand brandHover = 0.045`, `dC = -0.035` | brand hover | measured | holds |\n| `contrast onBrand brand >= 4.5` | primary button label | 8.9:1 | holds (solver will lighten it toward the floor) |\n| `contrast brand canvas >= 3` | brand as border/outline | 8.6:1 | holds |\n| `dH brand link = -160` | brand, link | 62° → 262° = `-160°` | **design decision**: not a clean complement; the measured arc is pinned |\n| `C link = linkC` (shared) | link | 0.17 in the only theme | design decision |\n| `contrast link canvas >= 4.5` | `--accent2` text | 6.6:1 | holds |\n| `dH brand danger = -37` | danger | 62° → 25° | holds |\n| `dH brand success = 83` | success | 62° → 145° | holds |\n| `dH brand arcane = -122` | arcane | 62° → 300° | holds |\n| `contrast {danger,success,arcane} canvas >= 4.5` | status text | 5.9 / 10.5 / 6.4 :1 | holds |\n| `distance canvas X -> min weight 0.05` | text, textMuted, border, link, danger, success, arcane | — | design decision: stay as close to the canvas as the floor allows, so the solver never over-darkens/over-brightens |",
+          "relations": "| rule | tokens | evidence (dark) | status |\n|---|---|---|---|\n| `dL canvas surface1 = stepL` | canvas, surface1 | `+0.030` | holds |\n| `dL surface1 surface2 = stepL` | surface1, surface2 | `+0.020` (within ±0.01 of 0.03) | holds |\n| `dL surface2 surface3 = stepL` | surface2, surface3 | `+0.080` — the `.btn` sits two steps up | **design decision**: the ramp is regularised, `.btn` becomes one even step lighter |\n| `lock H warmth surface1..3 surfaceHover` | surfaces | hues 264 / 264 / 265 / 269 (arc 5°) | holds (weight 0.3) |\n| `lock C surface1..3` + `dC canvas surface3 = 0.013` | surfaces | C 0.014 / 0.016 / 0.024 vs canvas 0.011 | holds within ±0.005 after regularisation |\n| `dL surface3 surfaceHover = hoverStep` | `.btn:hover` | `+0.070` | holds |\n| `lock H readingGray text textMuted border borderMuted` | gray family | hues 265 / 263 / 265 / 266 | holds; hue taken from the orientation point (see Findings) |\n| `C text = 0.008`, `lock C text textMuted` | text | 0.006 / 0.021 | **design decision**: one chroma for the whole text family |\n| `C border = 0.027`, `lock C border borderMuted` | borders | 0.028 / 0.027 | holds |\n| `contrast text canvas >= 7` | text | 14.6:1 | holds (AAA) |\n| `contrast textMuted canvas >= 4.5` | textMuted | 6.0:1 | holds (AA) |\n| `contrast border canvas >= 3` | border | ~2.0:1 | **floor the CSS fails** |\n| `dL borderMuted border = 0.035` | borders | `#2a3142` → `#2f3848` = `+0.035` | holds |\n| `lock H brand brandHover onBrand` | brand family | 62 / 64 / 60 | holds |\n| `dL brand brandHover = 0.045`, `dC = -0.035` | brand hover | measured | holds |\n| `contrast onBrand brand >= 4.5` | primary button label | 8.9:1 | holds (solver will lighten it toward the floor) |\n| `contrast brand canvas >= 3` | brand as border/outline | 8.6:1 | holds |\n| `dH brand link = -160` | brand, link | 62° → 262° = `-160°` | **design decision**: not a clean complement; the measured arc is pinned |\n| `C link = linkC` (shared) | link | 0.17 in the only theme | design decision |\n| `contrast link canvas >= 4.5` | `--accent2` text | 6.6:1 | holds |\n| `dH brand danger = -37` | danger | 62° → 25° | holds |\n| `dH brand success = 83` | success | 62° → 145° | holds |\n| `dH brand arcane = -122` | arcane | 62° → 300° | holds |\n| `contrast {danger,success,arcane} canvas >= 4.5` | status text | 5.9 / 10.5 / 6.4 :1 | holds |\n| `distance canvas X -> min weight 0.05` | text, textMuted, border, link, danger, success, arcane | — | design decision: stay as close to the canvas as the floor allows, so the solver never over-darkens/over-brightens |",
 
-    "expected": "*Export CSS* writes `/* Point-CAD theme — 16 colours, themes: dark, light */`, then `:root { … }` with the **dark** solve (the default theme), then `@media (prefers-color-scheme: dark) { :root { … } }`, then `[data-theme=\"dark\"]` and `[data-theme=\"light\"]` blocks. Each block lists all 16 exported points as `--color-<kebab>: oklch(L% C H);` — `warmth` and `readingGray` are orientation points and never appear.\n\nExpected log after *Solve themes*: `solve: converged=true iterations=<n> residual<1e-6  dark: 0 unmet · light: 0 unmet`.\n\nDerived tokens expected to move more than ΔE 0.05 from their seed, and why:\n\n| theme | token | move | rule responsible |\n|---|---|---|---|\n| dark | `surface3` | lighter/darker by ~0.05 L | the regularised `dL … = stepL` ramp (`.btn` was two steps up) |\n| dark | `border` | lighter by ~0.15 L | `contrast border canvas >= 3` (the CSS fails this at ~2.0:1) |\n| dark | `borderMuted` | follows `border` | `dL borderMuted border = 0.035` |\n| dark | `text` | possibly darker | `distance canvas text -> min` pulls it toward the 7:1 floor; add `L text >= 0.90` if the current `#e6e9ef` must be kept |\n| dark | `onBrand` | lighter | `distance brand onBrand -> min` at the 4.5:1 floor |\n| light | all derived | n/a (no observed values) | proposed theme, solved from anchors + seeds |\n\n`preview.css` / `preview.html` exercise: the ramp `canvas → surface1 → surface2 → surface3 → surfaceHover` as nested panels and a hovered button; `text`, `textMuted`, `link`, `danger`, `success`, `arcane` as foregrounds on those surfaces; `brand`/`brandHover`/`onBrand` as the primary button and its hover state; `border`/`borderMuted` as panel and hint outlines.",
+          "expected": "*Export CSS* writes `/* Point-CAD theme — 16 colours, themes: dark, light */`, then `:root { … }` with the **dark** solve (the default theme), then `@media (prefers-color-scheme: dark) { :root { … } }`, then `[data-theme=\"dark\"]` and `[data-theme=\"light\"]` blocks. Each block lists all 16 exported points as `--color-<kebab>: oklch(L% C H);` — `warmth` and `readingGray` are orientation points and never appear.\n\nExpected log after *Solve themes*: `solve: converged=true iterations=<n> residual<1e-6  dark: 0 unmet · light: 0 unmet`.\n\nDerived tokens expected to move more than ΔE 0.05 from their seed, and why:\n\n| theme | token | move | rule responsible |\n|---|---|---|---|\n| dark | `surface3` | lighter/darker by ~0.05 L | the regularised `dL … = stepL` ramp (`.btn` was two steps up) |\n| dark | `border` | lighter by ~0.15 L | `contrast border canvas >= 3` (the CSS fails this at ~2.0:1) |\n| dark | `borderMuted` | follows `border` | `dL borderMuted border = 0.035` |\n| dark | `text` | possibly darker | `distance canvas text -> min` pulls it toward the 7:1 floor; add `L text >= 0.90` if the current `#e6e9ef` must be kept |\n| dark | `onBrand` | lighter | `distance brand onBrand -> min` at the 4.5:1 floor |\n| light | all derived | n/a (no observed values) | proposed theme, solved from anchors + seeds |\n\n`preview.css` / `preview.html` exercise: the ramp `canvas → surface1 → surface2 → surface3 → surfaceHover` as nested panels and a hovered button; `text`, `textMuted`, `link`, `danger`, `success`, `arcane` as foregrounds on those surfaces; `brand`/`brandHover`/`onBrand` as the primary button and its hover state; `border`/`borderMuted` as panel and hint outlines.",
 
-    "replacements": "| literal | where | property | token | replacement |\n|---|---|---|---|---|\n| `#0a0c11` | `main.css` `:root` ×1 | `--bg` | `canvas` | `--bg: var(--color-canvas)` |\n| `rgba(14,17,24,.94)` | `main.css` `:root` ×1 | `--panel` | `surface1` | `--panel: color-mix(in oklab, var(--color-surface-1) 94%, transparent)` |\n| `#e6e9ef` | `main.css` `:root` ×1 | `--fg` | `text` | `--fg: var(--color-text)` |\n| `#8b93a5` | `main.css` `:root` ×1 | `--muted` | `textMuted` | `--muted: var(--color-text-muted)` |\n| `#ff9a3c` | `main.css` `:root` ×1 | `--accent` | `brand` | `--accent: var(--color-brand)` |\n| `#4d8dff` | `main.css` `:root` ×1 | `--accent2` | `link` | `--accent2: var(--color-link)` |\n| `#ff4646` | `main.css` `:root` ×1 | `--danger` | `danger` | `--danger: var(--color-danger)` |\n| `#1c2230` | `main.css` `.btn` ×1 | background | `surface3` | `background: var(--color-surface-3)` |\n| `#2f3848` | `main.css` `.btn` ×1, `.row select/input` ×1 | border-color | `border` | `border: 1px solid var(--color-border)` |\n| `#26304a` | `main.css` `.btn:hover` ×1 | background | `surfaceHover` | `background: var(--color-surface-hover)` |\n| `#1a0f05` | `main.css` `.btn.primary` ×1 | color | `onBrand` | `color: var(--color-on-brand)` |\n| `#ffb066` | `main.css` `.btn.primary:hover` ×1 | background | `brandHover` | `background: var(--color-brand-hover)` |\n| `#2a3142` | `main.css` `.panel` ×1 | border-color | `borderMuted` | `border: 1px solid var(--color-border-muted)` |\n| `#10141c` | `main.css` `.row select/input` ×1, `.panel code` ×1 | background | `surface2` | `background: var(--color-surface-2)` |\n| `rgba(0,0,0,.55)` | `main.css` `.overlay` ×1 | background | — | keep literal (black scrim) |\n| `rgba(0,0,0,.6)` | `main.css` `.panel` ×1 | box-shadow | — | keep literal (shadow) |\n| `#3ddc5a` | `main.css` `.end.won h2` ×1 | color | `success` | `color: var(--color-success)` |\n| `rgba(10,12,17,.9)` | `hud.css` `.mines-count` ×1 | background | `canvas` | `background: color-mix(in oklab, var(--color-canvas) 90%, transparent)` |\n| `rgba(10,12,17,.7)` | `hud.css` `.hint` ×1 | background | `canvas` | `background: color-mix(in oklab, var(--color-canvas) 70%, transparent)` |\n| `rgba(255,255,255,.08)` | `hud.css` `.mines-ring` ×1 | conic stop | `text` | `color-mix(in oklab, var(--color-text) 8%, transparent)` |\n| `#b57bff` | `hud.css` `.collapses` ×1 | color | `arcane` | `color: var(--color-arcane)` |\n| `#262e3d` | `hud.css` `.hint` ×1 | border-color | `borderMuted` | `border: 1px solid var(--color-border-muted)` |\n| `rgba(255,154,60,.15)` | `hud.css` `.flash` ×1 | background | `brand` | `background: color-mix(in oklab, var(--color-brand) 15%, transparent)` |\n| `rgba(255,255,255,.85)` | `hud.css` `.crosshair::before/after` ×2 | background | — | keep literal (`mix-blend-mode: difference`) |\n\n**Deletions:** none — the stylesheet has no per-theme overrides today. Once the token file ships, the six `--bg/--panel/--fg/--muted/--accent/--accent2/--danger` aliases in `:root` may be deleted and their `var()` users repointed at `--color-*` directly; keeping them as one-line aliases is the lower-risk first step and is what the table above does.",
+          "replacements": "| literal | where | property | token | replacement |\n|---|---|---|---|---|\n| `#0a0c11` | `main.css` `:root` ×1 | `--bg` | `canvas` | `--bg: var(--color-canvas)` |\n| `rgba(14,17,24,.94)` | `main.css` `:root` ×1 | `--panel` | `surface1` | `--panel: color-mix(in oklab, var(--color-surface-1) 94%, transparent)` |\n| `#e6e9ef` | `main.css` `:root` ×1 | `--fg` | `text` | `--fg: var(--color-text)` |\n| `#8b93a5` | `main.css` `:root` ×1 | `--muted` | `textMuted` | `--muted: var(--color-text-muted)` |\n| `#ff9a3c` | `main.css` `:root` ×1 | `--accent` | `brand` | `--accent: var(--color-brand)` |\n| `#4d8dff` | `main.css` `:root` ×1 | `--accent2` | `link` | `--accent2: var(--color-link)` |\n| `#ff4646` | `main.css` `:root` ×1 | `--danger` | `danger` | `--danger: var(--color-danger)` |\n| `#1c2230` | `main.css` `.btn` ×1 | background | `surface3` | `background: var(--color-surface-3)` |\n| `#2f3848` | `main.css` `.btn` ×1, `.row select/input` ×1 | border-color | `border` | `border: 1px solid var(--color-border)` |\n| `#26304a` | `main.css` `.btn:hover` ×1 | background | `surfaceHover` | `background: var(--color-surface-hover)` |\n| `#1a0f05` | `main.css` `.btn.primary` ×1 | color | `onBrand` | `color: var(--color-on-brand)` |\n| `#ffb066` | `main.css` `.btn.primary:hover` ×1 | background | `brandHover` | `background: var(--color-brand-hover)` |\n| `#2a3142` | `main.css` `.panel` ×1 | border-color | `borderMuted` | `border: 1px solid var(--color-border-muted)` |\n| `#10141c` | `main.css` `.row select/input` ×1, `.panel code` ×1 | background | `surface2` | `background: var(--color-surface-2)` |\n| `rgba(0,0,0,.55)` | `main.css` `.overlay` ×1 | background | — | keep literal (black scrim) |\n| `rgba(0,0,0,.6)` | `main.css` `.panel` ×1 | box-shadow | — | keep literal (shadow) |\n| `#3ddc5a` | `main.css` `.end.won h2` ×1 | color | `success` | `color: var(--color-success)` |\n| `rgba(10,12,17,.9)` | `hud.css` `.mines-count` ×1 | background | `canvas` | `background: color-mix(in oklab, var(--color-canvas) 90%, transparent)` |\n| `rgba(10,12,17,.7)` | `hud.css` `.hint` ×1 | background | `canvas` | `background: color-mix(in oklab, var(--color-canvas) 70%, transparent)` |\n| `rgba(255,255,255,.08)` | `hud.css` `.mines-ring` ×1 | conic stop | `text` | `color-mix(in oklab, var(--color-text) 8%, transparent)` |\n| `#b57bff` | `hud.css` `.collapses` ×1 | color | `arcane` | `color: var(--color-arcane)` |\n| `#262e3d` | `hud.css` `.hint` ×1 | border-color | `borderMuted` | `border: 1px solid var(--color-border-muted)` |\n| `rgba(255,154,60,.15)` | `hud.css` `.flash` ×1 | background | `brand` | `background: color-mix(in oklab, var(--color-brand) 15%, transparent)` |\n| `rgba(255,255,255,.85)` | `hud.css` `.crosshair::before/after` ×2 | background | — | keep literal (`mix-blend-mode: difference`) |\n\n**Deletions:** none — the stylesheet has no per-theme overrides today. Once the token file ships, the six `--bg/--panel/--fg/--muted/--accent/--accent2/--danger` aliases in `:root` may be deleted and their `var()` users repointed at `--color-*` directly; keeping them as one-line aliases is the lower-risk first step and is what the table above does.",
 
-    "plumbing": "The stylesheets currently have **no theme switching at all** — a single dark palette in `:root`. Adopt both mechanisms the emitter produces:\n\n```html\n<link rel=\"stylesheet\" href=\"styles/minefield-3d-ui-tokens.css\">\n<link rel=\"stylesheet\" href=\"styles/main.css\">\n<link rel=\"stylesheet\" href=\"styles/hud.css\">\n```\n\n1. Load the token file **first**; `main.css` and `hud.css` then only consume `var(--color-*)`.\n2. `:root` in the token file carries the **dark** theme (`defaultTheme: dark`), so the app looks exactly as it does now with no attribute set.\n3. `@media (prefers-color-scheme: dark) { :root { … } }` is emitted for the `dark` theme and is a no-op against the default — harmless, and it keeps the export standard.\n4. `[data-theme=\"light\"]` / `[data-theme=\"dark\"]` on `<html>` gives the explicit override. If a light default is ever wanted, put the `light` block in `:root` by reordering the themes in the sketch, not by editing the CSS.\n5. Add to `main.css` `:root`: `color-scheme: dark light;` so scrollbars, `select` popups and `input[type=range]` follow the theme. With `[data-theme=\"light\"]` set, override it to `color-scheme: light dark`.\n6. `#scene` (the WebGL canvas) and any clear colour set in JS should read `--color-canvas` via `getComputedStyle(document.documentElement)` rather than hard-coding `#0a0c11`.",
+          "plumbing": "The stylesheets currently have **no theme switching at all** — a single dark palette in `:root`. Adopt both mechanisms the emitter produces:\n\n```html\n<link rel=\"stylesheet\" href=\"styles/minefield-3d-ui-tokens.css\">\n<link rel=\"stylesheet\" href=\"styles/main.css\">\n<link rel=\"stylesheet\" href=\"styles/hud.css\">\n```\n\n1. Load the token file **first**; `main.css` and `hud.css` then only consume `var(--color-*)`.\n2. `:root` in the token file carries the **dark** theme (`defaultTheme: dark`), so the app looks exactly as it does now with no attribute set.\n3. `@media (prefers-color-scheme: dark) { :root { … } }` is emitted for the `dark` theme and is a no-op against the default — harmless, and it keeps the export standard.\n4. `[data-theme=\"light\"]` / `[data-theme=\"dark\"]` on `<html>` gives the explicit override. If a light default is ever wanted, put the `light` block in `:root` by reordering the themes in the sketch, not by editing the CSS.\n5. Add to `main.css` `:root`: `color-scheme: dark light;` so scrollbars, `select` popups and `input[type=range]` follow the theme. With `[data-theme=\"light\"]` set, override it to `color-scheme: light dark`.\n6. `#scene` (the WebGL canvas) and any clear colour set in JS should read `--color-canvas` via `getComputedStyle(document.documentElement)` rather than hard-coding `#0a0c11`.",
 
-    "alpha": "Five declarations use a token colour at partial alpha. Express them with `color-mix` so the theme follows:\n\n| original | replacement |\n|---|---|\n| `rgba(14,17,24,.94)` | `color-mix(in oklab, var(--color-surface-1) 94%, transparent)` |\n| `rgba(10,12,17,.9)` | `color-mix(in oklab, var(--color-canvas) 90%, transparent)` |\n| `rgba(10,12,17,.7)` | `color-mix(in oklab, var(--color-canvas) 70%, transparent)` |\n| `rgba(255,154,60,.15)` | `color-mix(in oklab, var(--color-brand) 15%, transparent)` |\n| `rgba(255,255,255,.08)` | `color-mix(in oklab, var(--color-text) 8%, transparent)` |\n\nDerived shades that were **not** promoted to tokens (none are needed today; `.btn:hover` and `.btn.primary:hover` both became tokens) can use relative colour syntax, e.g. `oklch(from var(--color-surface-3) calc(l + 0.07) c h)`.\n\n`box-shadow: 0 20px 60px rgba(0,0,0,.6)` and the `.overlay` scrim stay literal black; they are depth cues, not palette members. `.crosshair` uses `rgba(255,255,255,.85)` with `mix-blend-mode: difference` — it must stay pure white to invert correctly.\n\nDuring the transition write `var(--color-text, #e6e9ef)` (the `fallback` flag is on, and `preview.css` shows the pattern) so the UI is correct even if the token file fails to load.",
+          "alpha": "Five declarations use a token colour at partial alpha. Express them with `color-mix` so the theme follows:\n\n| original | replacement |\n|---|---|\n| `rgba(14,17,24,.94)` | `color-mix(in oklab, var(--color-surface-1) 94%, transparent)` |\n| `rgba(10,12,17,.9)` | `color-mix(in oklab, var(--color-canvas) 90%, transparent)` |\n| `rgba(10,12,17,.7)` | `color-mix(in oklab, var(--color-canvas) 70%, transparent)` |\n| `rgba(255,154,60,.15)` | `color-mix(in oklab, var(--color-brand) 15%, transparent)` |\n| `rgba(255,255,255,.08)` | `color-mix(in oklab, var(--color-text) 8%, transparent)` |\n\nDerived shades that were **not** promoted to tokens (none are needed today; `.btn:hover` and `.btn.primary:hover` both became tokens) can use relative colour syntax, e.g. `oklch(from var(--color-surface-3) calc(l + 0.07) c h)`.\n\n`box-shadow: 0 20px 60px rgba(0,0,0,.6)` and the `.overlay` scrim stay literal black; they are depth cues, not palette members. `.crosshair` uses `rgba(255,255,255,.85)` with `mix-blend-mode: difference` — it must stay pure white to invert correctly.\n\nDuring the transition write `var(--color-text, #e6e9ef)` (the `fallback` flag is on, and `preview.css` shows the pattern) so the UI is correct even if the token file fails to load.",
 
-    "skip": "Do **not** tokenise:\n\n- `transparent` (`.btn.primary` border-color) and any `currentColor` — not colours.\n- `rgba(0,0,0,.55)` (`.overlay`) and `rgba(0,0,0,.6)` (`.panel` shadow) — pure black scrim and shadow; they read correctly over any theme.\n- `rgba(255,255,255,.85)` (`.crosshair`) — required to be white for `mix-blend-mode: difference`.\n- Colours produced by the WebGL scene itself (materials, lights) — outside the stylesheet scope; only the clear colour should be wired to `--color-canvas`.\n- `system-ui` font stacks, `backdrop-filter`, `mix-blend-mode` — not colour.\n\nNo third-party stylesheets exist in this tree, so nothing was skipped for ownership reasons.",
+          "skip": "Do **not** tokenise:\n\n- `transparent` (`.btn.primary` border-color) and any `currentColor` — not colours.\n- `rgba(0,0,0,.55)` (`.overlay`) and `rgba(0,0,0,.6)` (`.panel` shadow) — pure black scrim and shadow; they read correctly over any theme.\n- `rgba(255,255,255,.85)` (`.crosshair`) — required to be white for `mix-blend-mode: difference`.\n- Colours produced by the WebGL scene itself (materials, lights) — outside the stylesheet scope; only the clear colour should be wired to `--color-canvas`.\n- `system-ui` font stacks, `backdrop-filter`, `mix-blend-mode` — not colour.\n\nNo third-party stylesheets exist in this tree, so nothing was skipped for ownership reasons.",
 
-    "order": "1. Add `styles/minefield-3d-ui-tokens.css` (from *Save CSS*) and link it before `main.css`.\n2. Repoint the seven aliases in `main.css` `:root` (`--bg`, `--panel`, `--fg`, `--muted`, `--accent`, `--accent2`, `--danger`) at the matching `--color-*` tokens. The page should look identical.\n3. Replace the remaining literals in `main.css`, then in `hud.css`, per the replacement table — one property class at a time (`background`, then `border-color`, then `color`).\n4. Convert the five alpha uses to `color-mix` (see *Alpha*).\n5. Add `color-scheme: dark light` to `:root`; verify scrollbars and `select` popups.\n6. State tokens: confirm `.btn:hover`, `.btn.primary:hover` and `.btn.active` (outline uses `--accent`) read from `--color-surface-hover`, `--color-brand-hover`, `--color-brand`.\n7. Wire the renderer clear colour to `--color-canvas`.\n8. Optionally delete the alias layer and use `--color-*` directly.\n9. Remove the `var(--color-x, <literal>)` fallbacks once the token file ships unconditionally.\n\nSteps 1–4 leave the page pixel-identical provided the sketch is solved with the `-> min` objectives disabled (or with `border`'s contrast floor relaxed); step 3 is where the deliberate changes listed in *Expected* land.",
+          "order": "1. Add `styles/minefield-3d-ui-tokens.css` (from *Save CSS*) and link it before `main.css`.\n2. Repoint the seven aliases in `main.css` `:root` (`--bg`, `--panel`, `--fg`, `--muted`, `--accent`, `--accent2`, `--danger`) at the matching `--color-*` tokens. The page should look identical.\n3. Replace the remaining literals in `main.css`, then in `hud.css`, per the replacement table — one property class at a time (`background`, then `border-color`, then `color`).\n4. Convert the five alpha uses to `color-mix` (see *Alpha*).\n5. Add `color-scheme: dark light` to `:root`; verify scrollbars and `select` popups.\n6. State tokens: confirm `.btn:hover`, `.btn.primary:hover` and `.btn.active` (outline uses `--accent`) read from `--color-surface-hover`, `--color-brand-hover`, `--color-brand`.\n7. Wire the renderer clear colour to `--color-canvas`.\n8. Optionally delete the alias layer and use `--color-*` directly.\n9. Remove the `var(--color-x, <literal>)` fallbacks once the token file ships unconditionally.\n\nSteps 1–4 leave the page pixel-identical provided the sketch is solved with the `-> min` objectives disabled (or with `border`'s contrast floor relaxed); step 3 is where the deliberate changes listed in *Expected* land.",
 
-    "findings": "**Accessibility**\n\n1. `border` (`#2f3848`) on `canvas` (`#0a0c11`) measures **~2.0:1**, below the 3:1 non-text minimum. The sketch writes `contrast border canvas >= 3`, so the solver will lighten it (roughly to `L ≈ 0.50`). This is a visible change to every `.btn`, `.panel` and `.row input` outline — accept it or replace the floor with `L border = 0.355` to keep today's look.\n2. `.hint` puts `--muted` (`#8b93a5`) on `rgba(10,12,17,.7)` over the 3D scene. Against the opaque canvas it is 6.0:1, but over a bright scene the effective ratio is unknown. Not expressible as a constraint; recommend raising the hint background to `.85` alpha.\n3. `.btn.primary` uses `#1a0f05` on `#ff9a3c` (8.9:1, fine), but `distance brand onBrand -> min` will lighten the label to the 4.5:1 floor. If the near-black label is intentional, drop that objective.\n\n**Merges and judgement calls**\n\n4. `#2a3142` (`.panel`) and `#262e3d` (`.hint`) were merged into `borderMuted` (ΔE_ok 0.012).\n5. `#0a0c11` appears as an opaque background *and* at .9/.7 alpha in the HUD; all three are one cluster, `canvas`.\n6. `surface2` (`#10141c`) and `surface1` (`#0e1118`) are only 0.02 L apart; the regularised ramp keeps them distinct at `stepL = 0.03`, which slightly separates panels from inputs.\n7. `.btn` (`#1c2230`) sits ~2 ramp steps above `surface2`; the even-ramp rule moves it one step. Flagged as a design decision, not a measured relation.\n\n**Near-neutrals**\n\n8. `text` (`C = 0.006`) is below the `C < 0.02` reliability threshold, so its hue is numerically meaningless. The whole gray family takes its hue from the `readingGray` **orientation point** (264°), not from `#e6e9ef` itself.\n\n**Themes**\n\n9. The `light` theme is **proposed** — nothing in the CSS switches schemes. Its block contains only anchors, orientation points, the two ramp variables and seeds on the correct (dark) side of the canvas; every value is derived by the solver and none of it is claimed as observed.\n\n**Hues not forced into clean relationships**\n\n10. `link` sits 160° from `brand`, not a 180° complement; `danger`/`success`/`arcane` sit at −37°/+83°/−122°. The measured arcs are pinned rather than rounded, because rounding `link` to 180° would shift `--accent2` off the blue the HUD ring and `code` colour rely on.\n\n**Not written**\n\n11. No `apca` constraints — the WCAG floors already bind, and mixing the two metrics would double-constrain lightness.\n12. No rule ties `brand` to `canvas`; the brand colour is a free anchor by definition.\n13. Out-of-gamut literals: none. Every literal is sRGB hex/rgba, and `gamut srgb` stays on.",
+          "findings": "**Accessibility**\n\n1. `border` (`#2f3848`) on `canvas` (`#0a0c11`) measures **~2.0:1**, below the 3:1 non-text minimum. The sketch writes `contrast border canvas >= 3`, so the solver will lighten it (roughly to `L ≈ 0.50`). This is a visible change to every `.btn`, `.panel` and `.row input` outline — accept it or replace the floor with `L border = 0.355` to keep today's look.\n2. `.hint` puts `--muted` (`#8b93a5`) on `rgba(10,12,17,.7)` over the 3D scene. Against the opaque canvas it is 6.0:1, but over a bright scene the effective ratio is unknown. Not expressible as a constraint; recommend raising the hint background to `.85` alpha.\n3. `.btn.primary` uses `#1a0f05` on `#ff9a3c` (8.9:1, fine), but `distance brand onBrand -> min` will lighten the label to the 4.5:1 floor. If the near-black label is intentional, drop that objective.\n\n**Merges and judgement calls**\n\n4. `#2a3142` (`.panel`) and `#262e3d` (`.hint`) were merged into `borderMuted` (ΔE_ok 0.012).\n5. `#0a0c11` appears as an opaque background *and* at .9/.7 alpha in the HUD; all three are one cluster, `canvas`.\n6. `surface2` (`#10141c`) and `surface1` (`#0e1118`) are only 0.02 L apart; the regularised ramp keeps them distinct at `stepL = 0.03`, which slightly separates panels from inputs.\n7. `.btn` (`#1c2230`) sits ~2 ramp steps above `surface2`; the even-ramp rule moves it one step. Flagged as a design decision, not a measured relation.\n\n**Near-neutrals**\n\n8. `text` (`C = 0.006`) is below the `C < 0.02` reliability threshold, so its hue is numerically meaningless. The whole gray family takes its hue from the `readingGray` **orientation point** (264°), not from `#e6e9ef` itself.\n\n**Themes**\n\n9. The `light` theme is **proposed** — nothing in the CSS switches schemes. Its block contains only anchors, orientation points, the two ramp variables and seeds on the correct (dark) side of the canvas; every value is derived by the solver and none of it is claimed as observed.\n\n**Hues not forced into clean relationships**\n\n10. `link` sits 160° from `brand`, not a 180° complement; `danger`/`success`/`arcane` sit at −37°/+83°/−122°. The measured arcs are pinned rather than rounded, because rounding `link` to 180° would shift `--accent2` off the blue the HUD ring and `code` colour rely on.\n\n**Not written**\n\n11. No `apca` constraints — the WCAG floors already bind, and mixing the two metrics would double-constrain lightness.\n12. No rule ties `brand` to `canvas`; the brand colour is a free anchor by definition.\n13. Out-of-gamut literals: none. Every literal is sRGB hex/rgba, and `gamut srgb` stays on.",
 
-    "preview": {
-      "css": "body { margin: 0; padding: 24px; font: 14px/1.6 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif;\n  background: var(--color-canvas, #0a0c11); color: var(--color-text, #e6e9ef); }\nh2 { margin: 0 0 4px; font-size: 20px; font-weight: 600; }\n.muted { color: var(--color-text-muted, #8b93a5); }\na { color: var(--color-link, #4d8dff); }\ncode { background: var(--color-surface-2, #10141c); color: var(--color-link, #4d8dff);\n  padding: 2px 6px; border-radius: 4px; }\n.panel { background: var(--color-surface-1, #0e1118); border: 1px solid var(--color-border-muted, #2a3142);\n  border-radius: 12px; padding: 16px; margin: 12px 0; }\n.panel .panel { background: var(--color-surface-2, #10141c); }\n.panel .panel .panel { background: var(--color-surface-3, #1c2230); }\n.btn { display: inline-block; background: var(--color-surface-3, #1c2230); color: var(--color-text, #e6e9ef);\n  border: 1px solid var(--color-border, #2f3848); border-radius: 8px; padding: 8px 14px; cursor: pointer; }\n.btn:hover { background: var(--color-surface-hover, #26304a); }\n.btn.primary { background: var(--color-brand, #ff9a3c); color: var(--color-on-brand, #1a0f05);\n  border-color: transparent; font-weight: 600; }\n.btn.primary:hover { background: var(--color-brand-hover, #ffb066); }\n.btn.active { outline: 2px solid var(--color-brand, #ff9a3c); }\n.hint { display: inline-block; border: 1px solid var(--color-border-muted, #262e3d); border-radius: 999px;\n  padding: 6px 14px; color: var(--color-text-muted, #8b93a5); font-size: .85em; }\n.lost { color: var(--color-danger, #ff4646); }\n.won { color: var(--color-success, #3ddc5a); }\n.collapses { color: var(--color-arcane, #b57bff); letter-spacing: .05em; }\n.ring { --p: 62; width: 64px; height: 64px; border-radius: 50%; padding: 5px;\n  background: conic-gradient(var(--color-link, #4d8dff) calc(var(--p) * 1%),\n    color-mix(in oklab, var(--color-text, #e6e9ef) 8%, transparent) 0); }\n.ring span { display: flex; width: 100%; height: 100%; border-radius: 50%; align-items: center;\n  justify-content: center; font-weight: 700;\n  background: color-mix(in oklab, var(--color-canvas, #0a0c11) 90%, transparent); }\n",
-      "html": "<h2>Minefield 3D — palette check<\/h2>\n<p>Body text on <code>canvas<\/code>. <span class=\"muted\">HUD captions use <code>textMuted<\/code>.<\/span> A <a href=\"#\">link<\/a> carries <code>--color-link<\/code>.<\/p>\n<div class=\"panel\">\n  <b>surface1<\/b> — overlay panel\n  <div class=\"panel\">\n    <b>surface2<\/b> — inputs and <code>code<\/code>\n    <div class=\"panel\"><b>surface3<\/b> — buttons; three even lightness steps above the canvas.<\/div>\n  <\/div>\n<\/div>\n<p>\n  <span class=\"btn\">Hover me<\/span>\n  <span class=\"btn primary\">Start run<\/span>\n  <span class=\"btn active\">Layer 3<\/span>\n<\/p>\n<p><span class=\"hint\">Right-click to flag · scroll to change layer<\/span><\/p>\n<p><span class=\"collapses\">collapses 2/3<\/span> · <b class=\"won\">Cleared<\/b> · <b class=\"lost\">Detonated<\/b><\/p>\n<div class=\"ring\"><span>07<\/span><\/div>\n<p class=\"muted\">Every colour above is a solved point in OKLab; edit an anchor or a rule in the Script window and press <b>Solve themes<\/b>.<\/p>\n"
-    }
-  }
-}
-</script>
+          "preview": {
+            "css": "body { margin: 0; padding: 24px; font: 14px/1.6 system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif;\n  background: var(--color-canvas, #0a0c11); color: var(--color-text, #e6e9ef); }\nh2 { margin: 0 0 4px; font-size: 20px; font-weight: 600; }\n.muted { color: var(--color-text-muted, #8b93a5); }\na { color: var(--color-link, #4d8dff); }\ncode { background: var(--color-surface-2, #10141c); color: var(--color-link, #4d8dff);\n  padding: 2px 6px; border-radius: 4px; }\n.panel { background: var(--color-surface-1, #0e1118); border: 1px solid var(--color-border-muted, #2a3142);\n  border-radius: 12px; padding: 16px; margin: 12px 0; }\n.panel .panel { background: var(--color-surface-2, #10141c); }\n.panel .panel .panel { background: var(--color-surface-3, #1c2230); }\n.btn { display: inline-block; background: var(--color-surface-3, #1c2230); color: var(--color-text, #e6e9ef);\n  border: 1px solid var(--color-border, #2f3848); border-radius: 8px; padding: 8px 14px; cursor: pointer; }\n.btn:hover { background: var(--color-surface-hover, #26304a); }\n.btn.primary { background: var(--color-brand, #ff9a3c); color: var(--color-on-brand, #1a0f05);\n  border-color: transparent; font-weight: 600; }\n.btn.primary:hover { background: var(--color-brand-hover, #ffb066); }\n.btn.active { outline: 2px solid var(--color-brand, #ff9a3c); }\n.hint { display: inline-block; border: 1px solid var(--color-border-muted, #262e3d); border-radius: 999px;\n  padding: 6px 14px; color: var(--color-text-muted, #8b93a5); font-size: .85em; }\n.lost { color: var(--color-danger, #ff4646); }\n.won { color: var(--color-success, #3ddc5a); }\n.collapses { color: var(--color-arcane, #b57bff); letter-spacing: .05em; }\n.ring { --p: 62; width: 64px; height: 64px; border-radius: 50%; padding: 5px;\n  background: conic-gradient(var(--color-link, #4d8dff) calc(var(--p) * 1%),\n    color-mix(in oklab, var(--color-text, #e6e9ef) 8%, transparent) 0); }\n.ring span { display: flex; width: 100%; height: 100%; border-radius: 50%; align-items: center;\n  justify-content: center; font-weight: 700;\n  background: color-mix(in oklab, var(--color-canvas, #0a0c11) 90%, transparent); }\n",
+            "html": "<h2>Minefield 3D — palette check<\/h2>\n<p>Body text on <code>canvas<\/code>. <span class=\"muted\">HUD captions use <code>textMuted<\/code>.<\/span> A <a href=\"#\">link<\/a> carries <code>--color-link<\/code>.<\/p>\n<div class=\"panel\">\n  <b>surface1<\/b> — overlay panel\n  <div class=\"panel\">\n    <b>surface2<\/b> — inputs and <code>code<\/code>\n    <div class=\"panel\"><b>surface3<\/b> — buttons; three even lightness steps above the canvas.<\/div>\n  <\/div>\n<\/div>\n<p>\n  <span class=\"btn\">Hover me<\/span>\n  <span class=\"btn primary\">Start run<\/span>\n  <span class=\"btn active\">Layer 3<\/span>\n<\/p>\n<p><span class=\"hint\">Right-click to flag · scroll to change layer<\/span><\/p>\n<p><span class=\"collapses\">collapses 2/3<\/span> · <b class=\"won\">Cleared<\/b> · <b class=\"lost\">Detonated<\/b><\/p>\n<div class=\"ring\"><span>07<\/span><\/div>\n<p class=\"muted\">Every colour above is a solved point in OKLab; edit an anchor or a rule in the Script window and press <b>Solve themes<\/b>.<\/p>\n"
+          }
+        }
+      }
+    </script>
 
-<script type="module">
-    import { bootHarness } from "https://math.cognotik.com/experiments/point-cad/extensions/theme/ui/harness.js";
+    <script type="module">
+      import { bootHarness } from 'https://math.cognotik.com/experiments/point-cad/extensions/theme/ui/harness.js';
 
-    /* ------------------------------------------------------------------
+      /* ------------------------------------------------------------------
        Multiverse palette pack.
 
        Each row below becomes one `theme <name> { … }` block appended to the
@@ -74,138 +89,372 @@
        family hue lock, the contrast floors and the measured hue arcs are
        re-solved for every palette, so all of them obey one design system.
        ------------------------------------------------------------------ */
-    const DARK_STEP = 0.03,   DARK_HOVER = 0.07;
-    const LIGHT_STEP = -0.025, LIGHT_HOVER = -0.05;
+      const DARK_STEP = 0.03,
+        DARK_HOVER = 0.07;
+      const LIGHT_STEP = -0.025,
+        LIGHT_HOVER = -0.05;
 
-    const wrap = h => ((h % 360) + 360) % 360;
-    const ok = ([l, c, h]) => `oklch(${(l * 100).toFixed(1)}% ${c} ${wrap(h).toFixed(0)})`;
+      const wrap = (h) => ((h % 360) + 360) % 360;
+      const ok = ([l, c, h]) => `oklch(${(l * 100).toFixed(1)}% ${c} ${wrap(h).toFixed(0)})`;
 
-    // name, note, mode, canvas, brand, warmth, readingGray   — OKLCH as [L, C, H]
-    const MULTIVERSE = [
+      // name, note, mode, canvas, brand, warmth, readingGray   — OKLCH as [L, C, H]
+      const MULTIVERSE = [
         // ---- dark canvases ------------------------------------------------
-        ["ukiyoe",     "Edo Japan - indigo nightfall, vermilion seal",        "dark",
-            [0.17, 0.045, 265], [0.64, 0.19, 35],  [0.32, 0.05, 265], [0.62, 0.014, 262]],
-        ["kente",      "Asante Ghana - black cloth shot with gold",           "dark",
-            [0.15, 0.030, 70],  [0.80, 0.16, 88],  [0.30, 0.04, 70],  [0.62, 0.015, 75]],
-        ["marrakech",  "Maghreb - Majorelle blue court, saffron lamps",       "dark",
-            [0.21, 0.100, 272], [0.80, 0.15, 75],  [0.35, 0.09, 272], [0.65, 0.020, 270]],
-        ["isfahan",    "Safavid Persia - turquoise tilework, rose garden",    "dark",
-            [0.18, 0.055, 200], [0.66, 0.17, 10],  [0.33, 0.06, 200], [0.63, 0.015, 198]],
-        ["byzantium",  "Constantinople - porphyry walls, mosaic gold",        "dark",
-            [0.16, 0.060, 330], [0.82, 0.14, 90],  [0.31, 0.07, 330], [0.63, 0.016, 325]],
-        ["nile",       "Kemet - lapis, faience and beaten gold",              "dark",
-            [0.18, 0.090, 265], [0.81, 0.15, 88],  [0.33, 0.08, 265], [0.64, 0.016, 262]],
-        ["aurora",     "Circumpolar north - polar night under green fire",    "dark",
-            [0.13, 0.040, 250], [0.80, 0.17, 155], [0.28, 0.05, 250], [0.62, 0.012, 246]],
-        ["paua",       "Aotearoa - paua shell, teal and violet fire",         "dark",
-            [0.14, 0.050, 215], [0.74, 0.14, 192], [0.30, 0.06, 215], [0.62, 0.014, 210]],
-        ["dreamtime",  "Central desert - ochre, charcoal and red earth",      "dark",
-            [0.16, 0.050, 45],  [0.62, 0.16, 40],  [0.31, 0.06, 45],  [0.62, 0.015, 48]],
-        ["andes",      "Quechua highlands - alpaca reds on volcanic stone",   "dark",
-            [0.15, 0.040, 20],  [0.64, 0.20, 28],  [0.30, 0.05, 20],  [0.62, 0.014, 25]],
-        ["amazonia",   "Rainforest canopy - jungle dark, macaw scarlet",      "dark",
-            [0.14, 0.050, 150], [0.64, 0.21, 30],  [0.29, 0.06, 150], [0.62, 0.014, 150]],
-        ["khokhloma",  "Volga lacquerware - black ground, gold, vermilion",   "dark",
-            [0.12, 0.025, 45],  [0.62, 0.21, 32],  [0.27, 0.04, 50],  [0.62, 0.015, 55]],
-        ["obangsaek",  "Korea - five cardinal colours over ink",              "dark",
-            [0.14, 0.020, 265], [0.66, 0.19, 25],  [0.29, 0.03, 265], [0.62, 0.012, 262]],
-        ["peatfire",   "Gaelic west - peat smoke, moss and copper",           "dark",
-            [0.16, 0.030, 110], [0.66, 0.13, 55],  [0.31, 0.04, 110], [0.62, 0.013, 108]],
-        ["highland",   "Tartan - bottle green sett, heather thread",          "dark",
-            [0.17, 0.050, 160], [0.68, 0.13, 320], [0.32, 0.05, 160], [0.63, 0.013, 155]],
-        ["batik",      "Java - soga brown wax on indigo",                     "dark",
-            [0.16, 0.045, 285], [0.64, 0.11, 62],  [0.31, 0.05, 285], [0.62, 0.014, 280]],
-        ["vaporwave",  "Strand 88 - mall neon at three in the morning",       "dark",
-            [0.15, 0.080, 300], [0.70, 0.24, 340], [0.30, 0.09, 300], [0.64, 0.020, 300]],
-        ["voidsong",   "Outside the wall - eldritch violet, pale sigils",     "dark",
-            [0.11, 0.050, 295], [0.68, 0.20, 312], [0.26, 0.06, 295], [0.60, 0.016, 295]],
-        ["cyberdeck",  "Console strand - phosphor green on smoked glass",     "dark",
-            [0.12, 0.020, 150], [0.86, 0.21, 140], [0.26, 0.03, 150], [0.62, 0.012, 150]],
-        ["ironforge",  "Deep roads - basalt halls, lava seams",               "dark",
-            [0.14, 0.012, 50],  [0.66, 0.20, 45],  [0.28, 0.02, 50],  [0.60, 0.010, 60]],
-        ["nebula",     "Orion arm - dust lanes and ion teal",                 "dark",
-            [0.13, 0.060, 288], [0.78, 0.15, 195], [0.28, 0.07, 288], [0.62, 0.015, 288]],
+        [
+          'ukiyoe',
+          'Edo Japan - indigo nightfall, vermilion seal',
+          'dark',
+          [0.17, 0.045, 265],
+          [0.64, 0.19, 35],
+          [0.32, 0.05, 265],
+          [0.62, 0.014, 262],
+        ],
+        [
+          'kente',
+          'Asante Ghana - black cloth shot with gold',
+          'dark',
+          [0.15, 0.03, 70],
+          [0.8, 0.16, 88],
+          [0.3, 0.04, 70],
+          [0.62, 0.015, 75],
+        ],
+        [
+          'marrakech',
+          'Maghreb - Majorelle blue court, saffron lamps',
+          'dark',
+          [0.21, 0.1, 272],
+          [0.8, 0.15, 75],
+          [0.35, 0.09, 272],
+          [0.65, 0.02, 270],
+        ],
+        [
+          'isfahan',
+          'Safavid Persia - turquoise tilework, rose garden',
+          'dark',
+          [0.18, 0.055, 200],
+          [0.66, 0.17, 10],
+          [0.33, 0.06, 200],
+          [0.63, 0.015, 198],
+        ],
+        [
+          'byzantium',
+          'Constantinople - porphyry walls, mosaic gold',
+          'dark',
+          [0.16, 0.06, 330],
+          [0.82, 0.14, 90],
+          [0.31, 0.07, 330],
+          [0.63, 0.016, 325],
+        ],
+        [
+          'nile',
+          'Kemet - lapis, faience and beaten gold',
+          'dark',
+          [0.18, 0.09, 265],
+          [0.81, 0.15, 88],
+          [0.33, 0.08, 265],
+          [0.64, 0.016, 262],
+        ],
+        [
+          'aurora',
+          'Circumpolar north - polar night under green fire',
+          'dark',
+          [0.13, 0.04, 250],
+          [0.8, 0.17, 155],
+          [0.28, 0.05, 250],
+          [0.62, 0.012, 246],
+        ],
+        [
+          'paua',
+          'Aotearoa - paua shell, teal and violet fire',
+          'dark',
+          [0.14, 0.05, 215],
+          [0.74, 0.14, 192],
+          [0.3, 0.06, 215],
+          [0.62, 0.014, 210],
+        ],
+        [
+          'dreamtime',
+          'Central desert - ochre, charcoal and red earth',
+          'dark',
+          [0.16, 0.05, 45],
+          [0.62, 0.16, 40],
+          [0.31, 0.06, 45],
+          [0.62, 0.015, 48],
+        ],
+        [
+          'andes',
+          'Quechua highlands - alpaca reds on volcanic stone',
+          'dark',
+          [0.15, 0.04, 20],
+          [0.64, 0.2, 28],
+          [0.3, 0.05, 20],
+          [0.62, 0.014, 25],
+        ],
+        [
+          'amazonia',
+          'Rainforest canopy - jungle dark, macaw scarlet',
+          'dark',
+          [0.14, 0.05, 150],
+          [0.64, 0.21, 30],
+          [0.29, 0.06, 150],
+          [0.62, 0.014, 150],
+        ],
+        [
+          'khokhloma',
+          'Volga lacquerware - black ground, gold, vermilion',
+          'dark',
+          [0.12, 0.025, 45],
+          [0.62, 0.21, 32],
+          [0.27, 0.04, 50],
+          [0.62, 0.015, 55],
+        ],
+        [
+          'obangsaek',
+          'Korea - five cardinal colours over ink',
+          'dark',
+          [0.14, 0.02, 265],
+          [0.66, 0.19, 25],
+          [0.29, 0.03, 265],
+          [0.62, 0.012, 262],
+        ],
+        [
+          'peatfire',
+          'Gaelic west - peat smoke, moss and copper',
+          'dark',
+          [0.16, 0.03, 110],
+          [0.66, 0.13, 55],
+          [0.31, 0.04, 110],
+          [0.62, 0.013, 108],
+        ],
+        [
+          'highland',
+          'Tartan - bottle green sett, heather thread',
+          'dark',
+          [0.17, 0.05, 160],
+          [0.68, 0.13, 320],
+          [0.32, 0.05, 160],
+          [0.63, 0.013, 155],
+        ],
+        [
+          'batik',
+          'Java - soga brown wax on indigo',
+          'dark',
+          [0.16, 0.045, 285],
+          [0.64, 0.11, 62],
+          [0.31, 0.05, 285],
+          [0.62, 0.014, 280],
+        ],
+        [
+          'vaporwave',
+          'Strand 88 - mall neon at three in the morning',
+          'dark',
+          [0.15, 0.08, 300],
+          [0.7, 0.24, 340],
+          [0.3, 0.09, 300],
+          [0.64, 0.02, 300],
+        ],
+        [
+          'voidsong',
+          'Outside the wall - eldritch violet, pale sigils',
+          'dark',
+          [0.11, 0.05, 295],
+          [0.68, 0.2, 312],
+          [0.26, 0.06, 295],
+          [0.6, 0.016, 295],
+        ],
+        [
+          'cyberdeck',
+          'Console strand - phosphor green on smoked glass',
+          'dark',
+          [0.12, 0.02, 150],
+          [0.86, 0.21, 140],
+          [0.26, 0.03, 150],
+          [0.62, 0.012, 150],
+        ],
+        [
+          'ironforge',
+          'Deep roads - basalt halls, lava seams',
+          'dark',
+          [0.14, 0.012, 50],
+          [0.66, 0.2, 45],
+          [0.28, 0.02, 50],
+          [0.6, 0.01, 60],
+        ],
+        [
+          'nebula',
+          'Orion arm - dust lanes and ion teal',
+          'dark',
+          [0.13, 0.06, 288],
+          [0.78, 0.15, 195],
+          [0.28, 0.07, 288],
+          [0.62, 0.015, 288],
+        ],
 
         // ---- light canvases -----------------------------------------------
-        ["sakura",     "Kyoto spring - washi paper and late plum",            "light",
-            [0.97, 0.006, 25],  [0.58, 0.16, 5],   [0.87, 0.020, 25],  [0.45, 0.012, 20]],
-        ["azulejo",    "Lisbon - whitewash and cobalt tile",                  "light",
-            [0.97, 0.004, 250], [0.52, 0.17, 255], [0.88, 0.020, 250], [0.44, 0.012, 250]],
-        ["talavera",   "Puebla - cream clay, cobalt and marigold",            "light",
-            [0.96, 0.018, 92],  [0.52, 0.17, 262], [0.88, 0.030, 92],  [0.44, 0.012, 90]],
-        ["marigold",   "Rajasthan - marigold garlands on sari pink",          "light",
-            [0.96, 0.020, 85],  [0.54, 0.20, 350], [0.87, 0.035, 85],  [0.44, 0.013, 80]],
-        ["aegean",     "Cyclades - lime-washed walls, deep Aegean",           "light",
-            [0.98, 0.003, 240], [0.52, 0.15, 242], [0.90, 0.015, 240], [0.43, 0.010, 236]],
-        ["sapmi",      "Sapmi - snowfield with gakti red and blue",           "light",
-            [0.97, 0.005, 250], [0.52, 0.19, 25],  [0.88, 0.020, 250], [0.42, 0.012, 248]],
-        ["ndebele",    "Ndebele wall - whitewash outlined in black",          "light",
-            [0.96, 0.004, 100], [0.48, 0.16, 255], [0.87, 0.015, 100], [0.40, 0.010, 100]],
-        ["porcelain",  "Jingdezhen - qinghua blue on white porcelain",        "light",
-            [0.97, 0.004, 235], [0.45, 0.15, 265], [0.89, 0.015, 235], [0.43, 0.011, 235]],
-        ["cochineal",  "Oaxaca - agave linen dyed with cochineal",            "light",
-            [0.96, 0.012, 60],  [0.50, 0.18, 18],  [0.87, 0.030, 60],  [0.44, 0.013, 55]],
-        ["solarpunk",  "Strand 2145 - living walls and warm brass",           "light",
-            [0.96, 0.012, 125], [0.55, 0.14, 132], [0.88, 0.030, 125], [0.43, 0.012, 128]],
-        ["lothlorien", "Elder forest - mallorn gold and silver leaf",         "light",
-            [0.96, 0.012, 100], [0.56, 0.13, 88],  [0.88, 0.030, 100], [0.44, 0.012, 110]],
-        ["spice",      "Desert world - glare off the sand, spice bloom",      "light",
-            [0.95, 0.020, 75],  [0.56, 0.17, 48],  [0.86, 0.040, 75],  [0.45, 0.014, 70]]
-    ];
+        [
+          'sakura',
+          'Kyoto spring - washi paper and late plum',
+          'light',
+          [0.97, 0.006, 25],
+          [0.58, 0.16, 5],
+          [0.87, 0.02, 25],
+          [0.45, 0.012, 20],
+        ],
+        [
+          'azulejo',
+          'Lisbon - whitewash and cobalt tile',
+          'light',
+          [0.97, 0.004, 250],
+          [0.52, 0.17, 255],
+          [0.88, 0.02, 250],
+          [0.44, 0.012, 250],
+        ],
+        [
+          'talavera',
+          'Puebla - cream clay, cobalt and marigold',
+          'light',
+          [0.96, 0.018, 92],
+          [0.52, 0.17, 262],
+          [0.88, 0.03, 92],
+          [0.44, 0.012, 90],
+        ],
+        [
+          'marigold',
+          'Rajasthan - marigold garlands on sari pink',
+          'light',
+          [0.96, 0.02, 85],
+          [0.54, 0.2, 350],
+          [0.87, 0.035, 85],
+          [0.44, 0.013, 80],
+        ],
+        [
+          'aegean',
+          'Cyclades - lime-washed walls, deep Aegean',
+          'light',
+          [0.98, 0.003, 240],
+          [0.52, 0.15, 242],
+          [0.9, 0.015, 240],
+          [0.43, 0.01, 236],
+        ],
+        [
+          'sapmi',
+          'Sapmi - snowfield with gakti red and blue',
+          'light',
+          [0.97, 0.005, 250],
+          [0.52, 0.19, 25],
+          [0.88, 0.02, 250],
+          [0.42, 0.012, 248],
+        ],
+        [
+          'ndebele',
+          'Ndebele wall - whitewash outlined in black',
+          'light',
+          [0.96, 0.004, 100],
+          [0.48, 0.16, 255],
+          [0.87, 0.015, 100],
+          [0.4, 0.01, 100],
+        ],
+        [
+          'porcelain',
+          'Jingdezhen - qinghua blue on white porcelain',
+          'light',
+          [0.97, 0.004, 235],
+          [0.45, 0.15, 265],
+          [0.89, 0.015, 235],
+          [0.43, 0.011, 235],
+        ],
+        [
+          'cochineal',
+          'Oaxaca - agave linen dyed with cochineal',
+          'light',
+          [0.96, 0.012, 60],
+          [0.5, 0.18, 18],
+          [0.87, 0.03, 60],
+          [0.44, 0.013, 55],
+        ],
+        [
+          'solarpunk',
+          'Strand 2145 - living walls and warm brass',
+          'light',
+          [0.96, 0.012, 125],
+          [0.55, 0.14, 132],
+          [0.88, 0.03, 125],
+          [0.43, 0.012, 128],
+        ],
+        [
+          'lothlorien',
+          'Elder forest - mallorn gold and silver leaf',
+          'light',
+          [0.96, 0.012, 100],
+          [0.56, 0.13, 88],
+          [0.88, 0.03, 100],
+          [0.44, 0.012, 110],
+        ],
+        [
+          'spice',
+          'Desert world - glare off the sand, spice bloom',
+          'light',
+          [0.95, 0.02, 75],
+          [0.56, 0.17, 48],
+          [0.86, 0.04, 75],
+          [0.45, 0.014, 70],
+        ],
+      ];
 
-    function themeBlock([name, note, mode, canvas, brand, warmth, gray]) {
-        const light = mode === "light";
+      function themeBlock([name, note, mode, canvas, brand, warmth, gray]) {
+        const light = mode === 'light';
         const gh = wrap(gray[2]);
         const bh = wrap(brand[2]);
 
         // seeds only: put every derived point on the correct side of the canvas
         const s = light
-            ? { text: 0.22, muted: 0.45, border: 0.600, borderMuted: 0.565, semantic: 0.50 }
-            : { text: 0.93, muted: 0.63, border: 0.500, borderMuted: 0.465, semantic: 0.70 };
-        const onBrandL = brand[0] >= 0.6 ? 0.16 : 0.95;   // label that can still clear 4.5:1
+          ? { text: 0.22, muted: 0.45, border: 0.6, borderMuted: 0.565, semantic: 0.5 }
+          : { text: 0.93, muted: 0.63, border: 0.5, borderMuted: 0.465, semantic: 0.7 };
+        const onBrandL = brand[0] >= 0.6 ? 0.16 : 0.95; // label that can still clear 4.5:1
 
         return [
-            `theme ${name} {${" ".repeat(Math.max(1, 22 - name.length))}# ${note}`,
-            `  canvas      at ${ok(canvas)}`,
-            `  brand       at ${ok(brand)}`,
-            `  warmth      at ${ok(warmth)}`,
-            `  readingGray at ${ok(gray)}`,
-            `  var stepL = ${light ? LIGHT_STEP : DARK_STEP}`,
-            `  var hoverStep = ${light ? LIGHT_HOVER : DARK_HOVER}`,
-            `  text        at ${ok([s.text, 0.008, gh])}`,
-            `  textMuted   at ${ok([s.muted, 0.008, gh])}`,
-            `  border      at ${ok([s.border, 0.027, gh])}`,
-            `  borderMuted at ${ok([s.borderMuted, 0.027, gh])}`,
-            `  link        at ${ok([s.semantic, 0.17, bh - 160])}`,
-            `  danger      at ${ok([s.semantic, 0.21, bh - 37])}`,
-            `  success     at ${ok([s.semantic, 0.19, bh + 83])}`,
-            `  arcane      at ${ok([s.semantic, 0.19, bh - 122])}`,
-            `  onBrand     at ${ok([onBrandL, 0.02, bh])}`,
-            `}`
-        ].join("\n");
-    }
+          `theme ${name} {${' '.repeat(Math.max(1, 22 - name.length))}# ${note}`,
+          `  canvas      at ${ok(canvas)}`,
+          `  brand       at ${ok(brand)}`,
+          `  warmth      at ${ok(warmth)}`,
+          `  readingGray at ${ok(gray)}`,
+          `  var stepL = ${light ? LIGHT_STEP : DARK_STEP}`,
+          `  var hoverStep = ${light ? LIGHT_HOVER : DARK_HOVER}`,
+          `  text        at ${ok([s.text, 0.008, gh])}`,
+          `  textMuted   at ${ok([s.muted, 0.008, gh])}`,
+          `  border      at ${ok([s.border, 0.027, gh])}`,
+          `  borderMuted at ${ok([s.borderMuted, 0.027, gh])}`,
+          `  link        at ${ok([s.semantic, 0.17, bh - 160])}`,
+          `  danger      at ${ok([s.semantic, 0.21, bh - 37])}`,
+          `  success     at ${ok([s.semantic, 0.19, bh + 83])}`,
+          `  arcane      at ${ok([s.semantic, 0.19, bh - 122])}`,
+          `  onBrand     at ${ok([onBrandL, 0.02, bh])}`,
+          `}`,
+        ].join('\n');
+      }
 
-    const node = document.getElementById("theme-doc");
-    const payload = JSON.parse(node.textContent);
+      const node = document.getElementById('theme-doc');
+      const payload = JSON.parse(node.textContent);
 
-    const pack = MULTIVERSE.map(themeBlock).join("\n");
-    const at = payload.pcad.lastIndexOf("\nsolver ");
-    payload.pcad = at < 0
-        ? `${payload.pcad}\n${pack}\n`
-        : `${payload.pcad.slice(0, at + 1)}${pack}\n\n${payload.pcad.slice(at + 1)}`;
+      const pack = MULTIVERSE.map(themeBlock).join('\n');
+      const at = payload.pcad.lastIndexOf('\nsolver ');
+      payload.pcad =
+        at < 0
+          ? `${payload.pcad}\n${pack}\n`
+          : `${payload.pcad.slice(0, at + 1)}${pack}\n\n${payload.pcad.slice(at + 1)}`;
 
-    const lightCount = MULTIVERSE.filter(t => t[2] === "light").length;
-    const darkCount = MULTIVERSE.length - lightCount;
-    const total = MULTIVERSE.length + 2;
+      const lightCount = MULTIVERSE.filter((t) => t[2] === 'light').length;
+      const darkCount = MULTIVERSE.length - lightCount;
+      const total = MULTIVERSE.length + 2;
 
-    payload.doc.summary +=
+      payload.doc.summary +=
         `\n- **Multiverse palette pack:** ${total} themes total — \`dark\` (found), \`light\` ` +
         `(proposed) plus ${MULTIVERSE.length} cultural/strand palettes ` +
         `(${darkCount} dark-canvas, ${lightCount} light-canvas). Each one supplies only two anchors, ` +
         `two orientation points and the ramp variables; all 14 derived tokens are re-solved ` +
         `against the same rules, so no palette can quietly drop a contrast floor.`;
 
-    payload.doc.plumbing +=
+      payload.doc.plumbing +=
         `\n\n7. With the pack loaded the emitter writes a \`[data-theme="<name>"]\` block for every ` +
         `palette (\`ukiyoe\`, \`kente\`, \`marrakech\`, … \`spice\`). \`:root\` still carries \`dark\`, and ` +
         `\`@media (prefers-color-scheme: light)\` maps to \`light\`, so the default behaviour is unchanged; ` +
@@ -215,7 +464,7 @@
         `9. The token file grows to ~${total * 16} declarations. If that matters, ship \`:root\` + the two ` +
         `default themes in the critical CSS and lazy-load the pack as a second stylesheet.`;
 
-    payload.doc.findings +=
+      payload.doc.findings +=
         `\n\n**Multiverse pack**\n\n` +
         `14. Every added theme is **proposed**, not observed — the stylesheet contains exactly one ` +
         `palette. Only \`canvas\` and \`brand\` are authored per theme; everything else is solver output.\n` +
@@ -234,9 +483,9 @@
         `read as a *relative* step, so the surfaces stay tinted rather than drifting grey — this is the ` +
         `point of keeping the rule as a delta instead of an absolute \`C\`.`;
 
-    node.textContent = JSON.stringify(payload, null, 2);
+      node.textContent = JSON.stringify(payload, null, 2);
 
-    bootHarness(document.getElementById("cad"));
-</script>
-</body>
+      bootHarness(document.getElementById('cad'));
+    </script>
+  </body>
 </html>

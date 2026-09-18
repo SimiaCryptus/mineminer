@@ -1,34 +1,53 @@
 <!doctype html>
 <html lang="en">
-<head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport"/>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+      name="viewport"
+    />
     <title>MineMiner</title>
-     <link href="./styles/themes.css" rel="stylesheet"/>
-    <link href="./styles/main.css" rel="stylesheet"/>
-    <link href="./styles/hud.css" rel="stylesheet"/>
-     <script>
-         // Paint the saved strand before the first frame so there is no flash of the
-         // default vault. 'auto' (or nothing saved) leaves :root + the media query in charge.
-         try {
-             const t = JSON.parse(localStorage.getItem('mineminer.settings') || '{}').theme;
-             if (t && t !== 'auto') document.documentElement.dataset.theme = t;
-         } catch { /* storage unavailable */ }
-     </script>
-    <script type="importmap">
-        {
-          "imports": {
-            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-          }
-        }
+    <link href="./styles/themes.css" rel="stylesheet" />
+    <link href="./styles/main.css" rel="stylesheet" />
+    <link href="./styles/hud.css" rel="stylesheet" />
+    <script>
+      // Paint the saved strand before the first frame so there is no flash of the
+      // default vault. 'auto' (or nothing saved) leaves :root + the media query in charge.
+      try {
+        const t = JSON.parse(localStorage.getItem('mineminer.settings') || '{}').theme;
+        if (t && t !== 'auto') document.documentElement.dataset.theme = t;
+      } catch {
+        /* storage unavailable */
+      }
     </script>
-</head>
-<body>
-<canvas id="scene"></canvas>
-<div id="ui"></div>
-<a href="/" class="home-link" style="position:fixed;top:14px;left:16px;z-index:10;color:var(--color-text-muted,#8b93a5);font-family:system-ui,sans-serif;text-decoration:none;pointer-events:auto;">&larr; Home</a>
-<noscript>MineMiner needs JavaScript and WebGL.</noscript>
-<script src="./src/main.js" type="module"></script>
-</body>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+    <div id="ui"></div>
+    <a
+      href="/"
+      class="home-link"
+      style="
+        position: fixed;
+        top: 14px;
+        left: 16px;
+        z-index: 10;
+        color: var(--color-text-muted, #8b93a5);
+        font-family: system-ui, sans-serif;
+        text-decoration: none;
+        pointer-events: auto;
+      "
+      >&larr; Home</a
+    >
+    <noscript>MineMiner needs JavaScript and WebGL.</noscript>
+    <script src="./src/main.js" type="module"></script>
+  </body>
 </html>
