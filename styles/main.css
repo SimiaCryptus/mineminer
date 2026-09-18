@@ -1,12 +1,53 @@
+/*
+ * Every colour comes from themes.css (Point-CAD tokens, selected by `data-theme`
+ * on <html>). The aliases below are the only place a --color-* token is read, so a
+ * theme switch is one attribute and nothing else in the app has to know about it.
+ * The literal after each token is the original dark palette, used only if
+ * themes.css fails to load.
+ */
 :root {
-    --bg: #0a0c11;
-    --panel: rgba(14, 17, 24, 0.94);
-    --fg: #e6e9ef;
-    --muted: #8b93a5;
-    --accent: #ff9a3c;
-    --accent2: #4d8dff;
-    --danger: #ff4646;
+    --bg: var(--color-canvas, #0a0c11);
+    --panel: color-mix(in oklab, var(--color-surface-1, #0e1118) 94%, transparent);
+    --surface-2: var(--color-surface-2, #10141c);
+    --surface-3: var(--color-surface-3, #1c2230);
+    --surface-hover: var(--color-surface-hover, #26304a);
+    --fg: var(--color-text, #e6e9ef);
+    --muted: var(--color-text-muted, #8b93a5);
+    --border: var(--color-border, #2f3848);
+    --border-muted: var(--color-border-muted, #2a3142);
+    --accent: var(--color-brand, #ff9a3c);
+    --accent-hover: var(--color-brand-hover, #ffb066);
+    --on-accent: var(--color-on-brand, #1a0f05);
+    --accent2: var(--color-link, #4d8dff);
+    --danger: var(--color-danger, #ff4646);
+    --success: var(--color-success, #3ddc5a);
+    --arcane: var(--color-arcane, #b57bff);
+    color-scheme: dark light;
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Light-canvas strands: scrollbars, select popups and range tracks follow the theme. */
+:root[data-theme="light"],
+:root[data-theme="sakura"],
+:root[data-theme="azulejo"],
+:root[data-theme="talavera"],
+:root[data-theme="marigold"],
+:root[data-theme="aegean"],
+:root[data-theme="sapmi"],
+:root[data-theme="ndebele"],
+:root[data-theme="porcelain"],
+:root[data-theme="cochineal"],
+:root[data-theme="solarpunk"],
+:root[data-theme="lothlorien"],
+:root[data-theme="spice"] {
+    color-scheme: light dark;
+}
+
+/* 'Follow system' (no data-theme) resolves to the light block in themes.css. */
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme]) {
+        color-scheme: light dark;
+    }
 }
 
 * {
@@ -46,9 +87,9 @@ body.miner #scene {
 }
 
 .btn {
-    background: #1c2230;
+    background: var(--surface-3);
     color: var(--fg);
-    border: 1px solid #2f3848;
+    border: 1px solid var(--border);
     border-radius: 8px;
     padding: 8px 14px;
     cursor: pointer;
@@ -56,7 +97,7 @@ body.miner #scene {
 }
 
 .btn:hover {
-    background: #26304a;
+    background: var(--surface-hover);
 }
 
 .btn:active {
@@ -65,13 +106,13 @@ body.miner #scene {
 
 .btn.primary {
     background: var(--accent);
-    color: #1a0f05;
+    color: var(--on-accent);
     border-color: transparent;
     font-weight: 600;
 }
 
 .btn.primary:hover {
-    background: #ffb066;
+    background: var(--accent-hover);
 }
 
 .btn.small {
@@ -100,7 +141,7 @@ body.miner #scene {
 
 .panel {
     background: var(--panel);
-    border: 1px solid #2a3142;
+    border: 1px solid var(--border-muted);
     border-radius: 12px;
     padding: 20px 24px;
     min-width: 320px;
@@ -123,14 +164,15 @@ body.miner #scene {
 .panel h2 {
     font-size: 1.3em;
 }
-   .panel h3 {
-       margin: 14px 0 4px;
-       font-size: 0.8em;
-       font-weight: 600;
-       color: var(--muted);
-       text-transform: uppercase;
-       letter-spacing: 0.08em;
-   }
+
+.panel h3 {
+    margin: 14px 0 4px;
+    font-size: 0.8em;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
 
 
 .panel .sub {
@@ -147,16 +189,27 @@ body.miner #scene {
 }
 
 .row select, .row input[type="number"], .row input[type="text"] {
-    background: #10141c;
+    background: var(--surface-2);
     color: var(--fg);
-    border: 1px solid #2f3848;
+    border: 1px solid var(--border);
     border-radius: 6px;
     padding: 4px 8px;
     min-width: 120px;
 }
 
+.row select optgroup {
+    background: var(--surface-2);
+    color: var(--muted);
+}
+
+.row select option {
+    background: var(--surface-2);
+    color: var(--fg);
+}
+
 .row input[type="range"] {
     width: 140px;
+    accent-color: var(--accent);
 }
 
 .actions {
@@ -167,7 +220,7 @@ body.miner #scene {
 }
 
 .panel code {
-    background: #10141c;
+    background: var(--surface-2);
     padding: 2px 6px;
     border-radius: 4px;
     color: var(--accent2);
@@ -190,12 +243,6 @@ body.miner #scene {
 }
 
 
-
-
-
-
-
-
 .stars {
     color: var(--accent);
     letter-spacing: 0.05em;
@@ -207,19 +254,21 @@ body.miner #scene {
 }
 
 
-   .settings .grid {
+.settings .grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 4px 16px;
 }
-   .settings .actions {
-       align-items: center;
-       margin-top: 8px;
-   }
-   .settings .actions .sub {
-       margin: 0;
-       font-size: 0.85em;
-   }
+
+.settings .actions {
+    align-items: center;
+    margin-top: 8px;
+}
+
+.settings .actions .sub {
+    margin: 0;
+    font-size: 0.85em;
+}
 
 
 .end.lost h2 {
@@ -227,5 +276,5 @@ body.miner #scene {
 }
 
 .end.won h2 {
-    color: #3ddc5a;
+    color: var(--success);
 }

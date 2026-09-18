@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {getTextures} from './textures.js';
+import {themeColour} from './cssColour.js';
 
 function easeInOut(t) {
     return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
@@ -38,12 +39,32 @@ export class SceneRig {
         this.scene.add(this.hemi, this.dir, this.dir.target, this.warm);
 
         this.vault = null;
+         this.wallMat = null;
+         this.lidMat = null;
         this.tween = null;
         this.shakeAmt = 0;
 
         window.addEventListener('resize', () => this.resize());
         this.resize();
+         this.applyTheme();
     }
+     /**
+      * Pulls the palette out of the CSS custom properties (themes.css) so the vault,
+      * fog and lighting follow the selected theme. Called again whenever it changes.
+      */
+     applyTheme() {
+         const canvas = themeColour('--color-canvas', 0x0a0c11);
+         const brand = themeColour('--color-brand', 0xff9a3c);
+         const border = themeColour('--color-border', 0x6b7280);
+         const text = themeColour('--color-text', 0x8fa3c7);
+         this.scene.background.setHex(canvas);
+         this.scene.fog.color.setHex(canvas);
+         this.warm.color.setHex(brand);
+         this.hemi.color.setHex(text);
+         this.hemi.groundColor.setHex(brand).multiplyScalar(0.45);
+         if (this.wallMat) this.wallMat.color.setHex(border);
+         if (this.lidMat) this.lidMat.color.setHex(border);
+     }
 
     setEffects(level) {
         const dpr = window.devicePixelRatio || 1;
@@ -76,6 +97,8 @@ export class SceneRig {
                     o.material.dispose();
                 }
             });
+             this.wallMat = null;
+             this.lidMat = null;
         }
        // The steel vault hugs the bounding box of whatever the tessellation fills
        // (centred on x/z = 0, lowest point on y = 0).
@@ -103,6 +126,7 @@ export class SceneRig {
         const wallMat = new THREE.MeshStandardMaterial({
             map: tex.steel, roughness: 0.5, metalness: 0.7, transparent: true, opacity: 0.32, depthWrite: false,
         });
+         this.wallMat = wallMat;
         const walls = [
             [w + 1, 0.5, 0, -(d / 2 + 0.25)],
             [w + 1, 0.5, 0, d / 2 + 0.25],
@@ -120,11 +144,13 @@ export class SceneRig {
             new THREE.EdgesGeometry(new THREE.BoxGeometry(w + 1, 0.3, d + 1)),
             new THREE.LineBasicMaterial({color: 0x6b7280}),
         );
+        this.lidMat = lid.material;
        lid.position.set(cx, y0 + h + 0.15, cz);
         g.add(lid);
 
         this.scene.add(g);
         this.vault = g;
+         this.applyTheme(); // the fresh materials have not been tinted yet
 
         const R = Math.max(w, d);
        this.dir.position.set(cx + w * 0.5, y0 + h + 14, cz + d * 0.35);

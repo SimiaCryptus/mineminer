@@ -1,5 +1,5 @@
 import {esc, fmtTime} from './Hud.js';
-import {LIVES_OPTIONS, QUANTUM_LIVES_OPTIONS} from '../core/settings.js';
+import {LIVES_OPTIONS, QUANTUM_LIVES_OPTIONS, THEME_GROUPS} from '../core/settings.js';
 import {CUSTOM_LIMITS} from '../game/LevelDefs.js';
 import {neighbourCount, TESSELLATIONS} from '../game/Tessellation.js';
 
@@ -12,6 +12,20 @@ function select(name, label, options, value, disabled = false) {
         .join('');
     return `<label class="row"><span>${label}</span><select name="${name}" ${disabled ? 'disabled' : ''}>${opts}</select></label>`;
 }
+/** Like select(), but with <optgroup>s — used for the 35-strand theme list. */
+function selectGroups(name, label, groups, value) {
+     const opts = groups
+         .map(([group, options]) => {
+             const inner = options
+                 .map(([v, text]) =>
+                     `<option value="${v}" ${String(v) === String(value) ? 'selected' : ''}>${esc(text)}</option>`)
+                 .join('');
+             return `<optgroup label="${esc(group)}">${inner}</optgroup>`;
+         })
+         .join('');
+     return `<label class="row"><span>${label}</span><select name="${name}">${opts}</select></label>`;
+}
+
 
 function check(name, label, value) {
     return `<label class="row"><span>${label}</span><input type="checkbox" name="${name}" ${value ? 'checked' : ''}></label>`;
@@ -101,6 +115,7 @@ export class Overlay {
             hideSatisfied: form.hideSatisfied.checked,
             colourblind: form.colourblind.checked,
             reducedMotion: form.reducedMotion.checked,
+             theme: fd.get('theme'),
             effects: fd.get('effects'),
             volume: Number(fd.get('volume')),
         };
@@ -138,6 +153,7 @@ export class Overlay {
         ${check('strictMarks', 'Strict marks (limited to mine count)', settings.strictMarks)}
         ${check('undo', 'Undo (Z)', settings.undo)}
         <h3>Display</h3>
+         ${selectGroups('theme', 'Colour theme', THEME_GROUPS, settings.theme)}
         ${check('hideSatisfied', 'Hide solved numbers', settings.hideSatisfied)}
         ${check('colourblind', 'Colourblind digits (underline 6 / 9)', settings.colourblind)}
         ${check('reducedMotion', 'Reduced motion', settings.reducedMotion)}
@@ -164,6 +180,14 @@ export class Overlay {
           “Hide solved numbers” fades out a number once every block around it is cleared or marked
           and the marks add up — it has nothing left to tell you.
         </p>
+         <p class="sub">
+           <b>Colour theme</b> repaints the whole game — interface, fog, vault steel and lighting —
+           from one solved palette in <code>themes.css</code>. “Follow system” tracks your OS
+           light/dark preference; the strands are constraint-solved variations on the same design
+           system, so every one keeps the contrast floors of the default vault. Press
+           <code>T</code> (<code>Shift+T</code> to go back) or use the 🎨 button to flip through them
+           without opening this panel.
+         </p>
          <p class="sub">
            <b>Quantum grace</b> removes coin flips. When you mark a block next to revealed numbers
            whose content those numbers do <em>not</em> prove, the vault collapses into a valid world

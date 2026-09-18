@@ -33,6 +33,7 @@ export class Hud {
         </div>
       </div>
       <div class="hud-tr">
+         <button class="btn theme" title="Next colour theme (T · Shift+T for previous)">🎨</button>
         <button class="btn gear" title="Pause / vault &amp; settings (Space)">⚙</button>
       </div>
       <div class="hud-bc">
@@ -55,6 +56,7 @@ export class Hud {
         this.flashEl = q('.flash');
 
         q('.gear').addEventListener('click', () => this.h.onSettings());
+         q('.theme').addEventListener('click', (e) => this.h.onTheme?.(e.shiftKey ? -1 : 1));
         this.touchBtn.addEventListener('click', () => this.h.onTouchMode());
         if ('ontouchstart' in window || navigator.maxTouchPoints > 0) this.touchBtn.classList.remove('hidden');
     }
@@ -105,6 +107,7 @@ export class Hud {
     }
 
     setCameraMode(mode) {
+         if (!this.camBtn) return;
         this.camBtn.textContent = mode === 'miner' ? '⛏ Miner' : '🎥 Orbit';
     }
 

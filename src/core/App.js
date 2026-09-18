@@ -1,11 +1,14 @@
 import * as THREE from 'three';
 import {EventBus} from './EventBus.js';
 import {
+   applyTheme,
   boardFromSettings,
   livesFromSetting,
   loadSettings,
   quantumLivesFromSetting,
   saveSettings,
+   themeLabel,
+   THEMES,
   weightsFromSettings,
 } from './settings.js';
 import {randomSeedString, rngFromSeed} from './rng.js';
@@ -25,7 +28,7 @@ import {Overlay} from '../ui/Overlay.js';
 import {Sfx} from '../audio/sfx.js';
 
 const HINT =
-    'LMB strike · RMB mark · MMB probe · drag to orbit · 1-9 isolate layer · Alt x-ray · V miner view · Space menu';
+     'LMB strike · RMB mark · MMB probe · drag to orbit · 1-9 isolate layer · Alt x-ray · V miner view · T theme · Space menu';
 
 function parseWeights(p) {
     // Legacy links used adj=26 / adj=6; the modern form is we=<edge>&wc=<corner>.
@@ -62,6 +65,8 @@ export class App {
         this.canvas = canvas;
         this.settings = loadSettings();
         this.bus = new EventBus();
+         // Paint the palette before anything samples it: SceneRig reads the CSS tokens.
+         applyTheme(this.settings.theme);
 
         this.rig = new SceneRig(canvas);
         this.rig.setEffects(this.settings.effects);
@@ -73,6 +78,7 @@ export class App {
             onCamera: () => this.toggleCameraMode(),
             onSettings: () => this.openSettings(),
             onTouchMode: () => this.toggleTouchMode(),
+             onTheme: (dir) => this.cycleTheme(dir),
         });
         this.overlay = new Overlay(uiRoot, {
             onSettingsChange: (s) => this.applySettings(s),
@@ -109,6 +115,10 @@ export class App {
         this.bus.on('board:started', () => this.hud.setHint(''));
 
         window.addEventListener('hashchange', () => this.startFromHash());
+         // 'Follow system' has to re-sample the tokens when the OS preference flips.
+         window.matchMedia?.('(prefers-color-scheme: light)')?.addEventListener?.('change', () => {
+             if (this.settings.theme === 'auto') this.rig.applyTheme();
+         });
         if (!this.startFromHash()) this.startBoard(this.specFromSettings(), randomSeedString());
 
         this.last = performance.now();
@@ -281,6 +291,9 @@ export class App {
             case 'KeyZ':
                 this.undo();
                 break;
+             case 'KeyT':
+                 this.cycleTheme(e.shiftKey ? -1 : 1);
+                 break;
             default: {
                 const m = /^(Digit|Numpad)(\d)$/.exec(e.code);
                 if (m) {
@@ -495,6 +508,21 @@ export class App {
         this.input.setTouchMode(this.touchMode);
         this.hud.setTouchMode(this.touchMode);
     }
+     // ----------------------------------------------------------------- themes
+     /** Selects a palette from themes.css: one attribute on <html>, then re-tint the scene. */
+     setTheme(theme) {
+         const id = applyTheme(theme);
+         this.settings = {...this.settings, theme: id};
+         saveSettings(this.settings);
+         this.rig.applyTheme();
+         return id;
+     }
+     cycleTheme(dir = 1) {
+         const at = THEMES.indexOf(this.settings.theme);
+         const next = THEMES[((at < 0 ? 0 : at) + dir + THEMES.length) % THEMES.length];
+         this.hud.flash(`Theme: ${themeLabel(this.setTheme(next))}`);
+     }
+
 
     // ---------------------------------------------------------------- overlay
 
@@ -537,6 +565,10 @@ export class App {
         this.settings = next;
         saveSettings(next);
         this.sfx.setVolume(next.volume);
+         if (prev.theme !== next.theme) {
+             applyTheme(next.theme);
+             this.rig.applyTheme();
+         }
         if (prev.effects !== next.effects) this.rig.setEffects(next.effects);
         if (this.board) {
             this.board.opts.cascade = next.cascade;
