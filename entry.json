@@ -1,12 +1,13 @@
 {
-  "id": "mineminer",
-  "category": "game",
-  "section": "games",
-  "icon": "MM",
-  "title": "MineMiner",
-  "href": "index.html",
-  "readme": "README.md",
-  "launchLabel": "Open MineMiner",
-  "video": "/videos/demo_mineminer.mp4",
-  "pitch": "A Minecraft-inspired implementation of Minesweeper extended into 3D."
+    "id": "mineminer",
+    "title": "MineMiner",
+    "category": "game",
+    "href": "index.html",
+    "readme": "README.md",
+    "video": "/videos/demo_mineminer.mp4",
+    "order": 2,
+    "section": "games",
+    "icon": "MM",
+    "launchLabel": "Open MineMiner",
+    "pitch": "A Minecraft-inspired implementation of Minesweeper extended into 3D."
 }
