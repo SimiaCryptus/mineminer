@@ -1,14 +1,12 @@
 import * as THREE from 'three';
 import { EventBus } from './EventBus.js';
+import { applyTheme, themeLabel, THEMES } from './themes.js';
 import {
-  applyTheme,
   boardFromSettings,
   livesFromSetting,
   loadSettings,
   quantumLivesFromSetting,
   saveSettings,
-  themeLabel,
-  THEMES,
   weightsFromSettings,
 } from './settings.js';
 import { randomSeedString, rngFromSeed } from './rng.js';

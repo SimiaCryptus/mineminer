@@ -1,5 +1,6 @@
 import { esc, fmtTime } from './Hud.js';
-import { LIVES_OPTIONS, QUANTUM_LIVES_OPTIONS, THEME_GROUPS } from '../core/settings.js';
+import { LIVES_OPTIONS, QUANTUM_LIVES_OPTIONS } from '../core/settings.js';
+import { THEME_GROUPS } from '../core/themes.js';
 import { CUSTOM_LIMITS } from '../game/LevelDefs.js';
 import { neighbourCount, TESSELLATIONS } from '../game/Tessellation.js';
 
